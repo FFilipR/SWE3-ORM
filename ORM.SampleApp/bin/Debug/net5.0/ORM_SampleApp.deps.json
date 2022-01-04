@@ -1,0 +1,36 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v5.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v5.0": {
+      "ORM_SampleApp/1.0.0": {
+        "dependencies": {
+          "ORM_FrameWork": "1.0.0"
+        },
+        "runtime": {
+          "ORM_SampleApp.dll": {}
+        }
+      },
+      "ORM_FrameWork/1.0.0": {
+        "runtime": {
+          "ORM_FrameWork.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ORM_SampleApp/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ORM_FrameWork/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

@@ -1,0 +1,12 @@
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM-FrameWork\bin\Debug\net5.0\ORM_FrameWork.deps.json
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM-FrameWork\bin\Debug\net5.0\ORM_FrameWork.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM-FrameWork\bin\Debug\net5.0\ref\ORM_FrameWork.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM-FrameWork\bin\Debug\net5.0\ORM_FrameWork.pdb
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM-FrameWork\obj\Debug\net5.0\ORM_FrameWork.csproj.AssemblyReference.cache
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM-FrameWork\obj\Debug\net5.0\ORM_FrameWork.GeneratedMSBuildEditorConfig.editorconfig
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM-FrameWork\obj\Debug\net5.0\ORM_FrameWork.AssemblyInfoInputs.cache
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM-FrameWork\obj\Debug\net5.0\ORM_FrameWork.AssemblyInfo.cs
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM-FrameWork\obj\Debug\net5.0\ORM_FrameWork.csproj.CoreCompileInputs.cache
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM-FrameWork\obj\Debug\net5.0\ORM_FrameWork.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM-FrameWork\obj\Debug\net5.0\ref\ORM_FrameWork.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM-FrameWork\obj\Debug\net5.0\ORM_FrameWork.pdb
