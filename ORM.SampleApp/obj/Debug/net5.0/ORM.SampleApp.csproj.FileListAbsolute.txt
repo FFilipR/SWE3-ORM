@@ -17,3 +17,15 @@ D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\obj
 D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\obj\Debug\net5.0\ref\ORM.SampleApp.dll
 D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\obj\Debug\net5.0\ORM.SampleApp.pdb
 D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\obj\Debug\net5.0\ORM.SampleApp.genruntimeconfig.cache
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\bin\Debug\net5.0\Microsoft.Extensions.Configuration.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\bin\Debug\net5.0\Microsoft.Extensions.Configuration.Abstractions.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\bin\Debug\net5.0\Microsoft.Extensions.Configuration.FileExtensions.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\bin\Debug\net5.0\Microsoft.Extensions.Configuration.Json.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\bin\Debug\net5.0\Microsoft.Extensions.FileProviders.Abstractions.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\bin\Debug\net5.0\Microsoft.Extensions.FileProviders.Physical.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\bin\Debug\net5.0\Microsoft.Extensions.FileSystemGlobbing.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\bin\Debug\net5.0\Microsoft.Extensions.Primitives.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\bin\Debug\net5.0\System.Runtime.CompilerServices.Unsafe.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\bin\Debug\net5.0\System.Text.Encodings.Web.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\bin\Debug\net5.0\System.Text.Json.dll
+D:\Private\FH\semester 5\SWE3 - Software Engineering 3\ORM.App\ORM.SampleApp\bin\Debug\net5.0\Npgsql.dll

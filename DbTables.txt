@@ -1,0 +1,62 @@
+
+select * from JuniorDevelopers;
+select * from Mentors;
+
+drop table jDevs_skills;
+drop table Departments;
+drop table JuniorDevelopers;
+drop table Skills;
+drop table Mentors;
+
+
+CREATE TYPE gender AS ENUM ('MALE', 'FEMALE');
+
+create table Mentors(
+	ID serial primary key,
+	FirstName varchar(50),
+	LastName varchar(50),
+	BDate timestamptz,
+	Sex gender,
+	Salary int,
+	HDate timestamptz
+)
+
+create table Skills (
+	ID serial primary key,
+	Name varchar(50),
+	KMentor int,
+	foreign key (KMentor) references Mentors (ID)
+)
+
+create table JuniorDevelopers (
+	ID serial primary key,
+	FirstName varchar(50),
+	LastName varchar(50),
+	BDate timestamptz,
+	Sex gender,
+	Salary int,
+	HDate timestamptz,
+	KSkill int,
+	foreign key (KSkill) references Skills (ID)
+)
+
+create table Departments (
+	ID serial primary key,
+	Name varchar(50),
+	KMentor int,
+	foreign key (KMentor) references Mentors (ID)
+)
+
+
+create table jDevs_skills(
+	KjDev int,
+	KSkill int,
+	foreign key (KjDev) references JuniorDevelopers (ID),
+	foreign key (KSkill) references Skills (ID)
+)
+
+
+
+
+
+

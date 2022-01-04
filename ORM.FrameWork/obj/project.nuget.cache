@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "PolwCPXANBA5K5Ueol9x3wBgsw6LgTUYs8weMmgwh0+1BVIpfwG1C0e4BGC/JOQMIwPQuTqfNu/VMGbRrUgrBQ==",
+  "dgSpecHash": "YFjmup12yyHG90uEhwZCxjmJB0t0KDPclE7KL84PXzvtStkb1q9+Nk8410YF2TIz9XlzRqkHOaVpUbNKjsyJBw==",
   "success": true,
   "projectFilePath": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.FrameWork\\ORM.FrameWork.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\FilipFilipovic\\.nuget\\packages\\npgsql\\6.0.2\\npgsql.6.0.2.nupkg.sha512",
+    "C:\\Users\\FilipFilipovic\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+  ],
   "logs": []
 }

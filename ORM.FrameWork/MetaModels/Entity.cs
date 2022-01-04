@@ -17,7 +17,7 @@ namespace ORM_FrameWork.MetaModels
             EntityAttribute typeAttr = (EntityAttribute)type.GetCustomAttribute(typeof(EntityAttribute));
 
             if ((typeAttr == null) || (string.IsNullOrWhiteSpace(typeAttr.TableName)))
-                TableName = typeAttr.TableName.ToUpper();
+                TableName = type.Name.ToUpper();
             
             else
                 TableName = typeAttr.TableName;
@@ -27,7 +27,7 @@ namespace ORM_FrameWork.MetaModels
         public Type Member { get; private set; }
         public string TableName { get; set; }
         public Field[] Fields { get; private set; }
-        public Field PKey { get; private set; } // what field is primary key
+        public Field PKey { get;  set; } // what field is primary key
 
         public List<Field> getFields(Type type)
         {
@@ -70,5 +70,28 @@ namespace ORM_FrameWork.MetaModels
 
             return fields;
         }
+
+        public string GetSql(string prefix = null)
+        {
+            if (prefix == null)
+                prefix = string.Empty;
+
+            string str = "SELECT ";
+
+            for(int i = 0; i < Fields.Length; i++)
+			{
+                if (i > 0) 
+                    str += ", ";
+
+                str += prefix.Trim() + Fields[i].ColumnName;
+            }
+
+            str += (" FROM " + TableName);
+
+            return str;
+
+        }
+
+       
     }
 }
