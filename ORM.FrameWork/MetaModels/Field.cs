@@ -41,7 +41,10 @@ namespace ORM_FrameWork.MetaModels
         public void SetValue(object obj, object val)
         {
             if (Member is PropertyInfo)
-                 ((PropertyInfo)Member).SetValue(obj, val);
+            {
+                ((PropertyInfo)Member).SetValue(obj, val);
+                return;
+            }
 
             throw new NotSupportedException("Type of the member is not supported.");
         }
@@ -91,6 +94,8 @@ namespace ORM_FrameWork.MetaModels
 
             if (Type.IsEnum)
                 return Enum.ToObject(Type, val);
+        
+
 
             return val;
         }

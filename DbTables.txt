@@ -1,6 +1,10 @@
 
 select * from JuniorDevelopers;
 select * from Mentors;
+select * from skills;
+select * from departments;
+
+
 
 drop table jDevs_skills;
 drop table Departments;
@@ -8,54 +12,57 @@ drop table JuniorDevelopers;
 drop table Skills;
 drop table Mentors;
 
-
-CREATE TYPE gender AS ENUM ('MALE', 'FEMALE');
+TRUNCATE TABLE Mentors;
 
 create table Mentors(
-	ID serial primary key,
+	ID varchar(50) primary key,
 	FirstName varchar(50),
 	LastName varchar(50),
 	BDate timestamptz,
-	Sex gender,
+	Sex int,
 	Salary int,
 	HDate timestamptz
 )
 
 create table Skills (
-	ID serial primary key,
+	ID varchar(50) primary key,
 	Name varchar(50),
-	KMentor int,
+	KMentor varchar(50),
 	foreign key (KMentor) references Mentors (ID)
 )
 
 create table JuniorDevelopers (
-	ID serial primary key,
+	ID varchar(50) primary key,
 	FirstName varchar(50),
 	LastName varchar(50),
 	BDate timestamptz,
-	Sex gender,
-	Salary int,
+	Sex int,
+	Salary varchar(50),
 	HDate timestamptz,
-	KSkill int,
+	KSkill varchar(50),
 	foreign key (KSkill) references Skills (ID)
 )
 
 create table Departments (
-	ID serial primary key,
+	ID varchar(50) primary key,
 	Name varchar(50),
-	KMentor int,
+	KMentor varchar(50),
 	foreign key (KMentor) references Mentors (ID)
 )
 
 
 create table jDevs_skills(
-	KjDev int,
-	KSkill int,
+	KjDev varchar(50),
+	KSkill varchar(50),
 	foreign key (KjDev) references JuniorDevelopers (ID),
 	foreign key (KSkill) references Skills (ID)
 )
 
+SELECT Salary, HDate, ID, FirstName, LastName, BDate, Sex FROM Mentors WHERE ID = 1;
 
+INSERT INTO Mentors(Salary, HDate, ID, FirstName, LastName, BDate, Sex) VALUES ('4500', '02-Jan-99 12:00:00 AM', 'm1', 'Larry', 'Bird', '10-Sep-69 12:00:00 AM', '0') ON CONFLICT (ID) DO UPDATE SET Salary = '4500', HDate = '02-Jan-99 12:00:00 AM', FirstName = 'Larry', LastName = 'Bird', BDate = '10-Sep-69 12:00:00 AM', Sex = '0'
+
+DELETE FROM Mentors WHERE ID = 'm1';
 
 
 

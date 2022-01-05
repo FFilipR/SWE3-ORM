@@ -38,30 +38,37 @@ namespace ORM_FrameWork
 
             NpgsqlParameter parameter;
 
-            for (int i = 0; i < entity.Fields.Length; i++)
-            {
-                if (i > 0) { command.CommandText += ", "; insert += "', "; }
-                command.CommandText += entity.Fields[i].ColumnName;
+            bool fr = true;
 
-                insert += "'"+(entity.Fields[i].GetValue(obj));
+            for (int f = 0; f < entity.Fields.Length; f++)
+            {
+                if (f > 0) 
+                { 
+                    command.CommandText += ", "; 
+                    insert += "', "; 
+                }
+                command.CommandText += entity.Fields[f].ColumnName;             
+               
+                insert += "'"+(entity.Fields[f].GetValue(obj));
 
                 parameter = command.CreateParameter();
-                parameter.ParameterName = ("p" + i.ToString());
-                parameter.Value = entity.Fields[i].ToColumnType(entity.Fields[i].GetValue(obj));
+                parameter.ParameterName = ("p" + f.ToString());
+                parameter.Value = entity.Fields[f].ToColumnType(entity.Fields[f].GetValue(obj));
                 command.Parameters.Add(parameter);
 
-                if (!entity.Fields[i].IsPrimaryKey)
+                if (!entity.Fields[f].IsPrimaryKey)
                 {
-                    if(i==0)
-                    {
-                        int id = Convert.ToInt32(entity.PKey.GetValue(obj));
-                        id++;
-                        conflict += (entity.PKey.ColumnName + " = " + (id));
-                    }
-                       
+
+                    if (fr)
+                        fr = false;
+                    else
+                        conflict += ", ";
+  
+                    conflict += (entity.Fields[f].ColumnName + " = '" + (entity.Fields[f].GetValue(obj))+"'");
+
                     parameter = command.CreateParameter();
-                    parameter.ParameterName = ("u" + i.ToString());
-                    parameter.Value = entity.Fields[i].ToColumnType(entity.Fields[i].GetValue(obj));
+                    parameter.ParameterName = ("u" + f.ToString());
+                    parameter.Value = entity.Fields[f].ToColumnType(entity.Fields[f].GetValue(obj));
                     command.Parameters.Add(parameter);
                 }
             }
@@ -89,7 +96,7 @@ namespace ORM_FrameWork
             NpgsqlCommand command = new NpgsqlCommand();
             command.Connection = DbConnection;
 
-            command.CommandText = GetEntity(type).GetSql() + " WHERE " + GetEntity(type).PKey.ColumnName + $" = {pKey}";
+            command.CommandText = GetEntity(type).GetSql() + " WHERE " + GetEntity(type).PKey.ColumnName + $" = '{pKey}'";
 
             NpgsqlParameter parameter = command.CreateParameter();
             parameter.ParameterName = ":pKey";
@@ -114,7 +121,7 @@ namespace ORM_FrameWork
             return obj;
         }
 
-        public static T GetByPkey<T>(object pKey)
+        public static T GetByID<T>(object pKey)
         {
             return (T) Create(typeof(T), pKey);
         }

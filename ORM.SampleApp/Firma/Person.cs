@@ -16,7 +16,7 @@ namespace ORM.SampleApp.Firma
 
         [Field(ColumnName ="BDate")]
         public DateTime BirthDate { get; set; }
-        public Gender Sex { get; set; }
+        public int Sex { get; set; }
 
         public enum Gender : int
         {

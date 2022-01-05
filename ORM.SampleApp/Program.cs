@@ -11,7 +11,7 @@ namespace ORM_SampleApp
         static IConfiguration config;
         static string connectionString;
 
-        static void Main(string[] args)
+        static void Main()
         {
             // get connection data from json file
             config = new ConfigurationBuilder().AddJsonFile("dbSettings.json", false, true).Build();
@@ -20,12 +20,15 @@ namespace ORM_SampleApp
             ORMapper.DbConnection = new NpgsqlConnection(connectionString);
             ORMapper.DbConnection.Open();
 
-            //DbOperations.InsertObject();
-            DbOperations.getMentor();
+            DbOperations.InsertObject();
+            DbOperations.UpdateMentorSalary();
 
             ORMapper.DbConnection.Close();
 
-        }
+
+
+         }
      
+    
     }
 }
