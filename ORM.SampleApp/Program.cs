@@ -22,6 +22,7 @@ namespace ORM_SampleApp
 
             DbOperations.InsertObject();
             DbOperations.UpdateMentorSalary();
+            DbOperations.GetMentorAndShowDepartments();
 
             ORMapper.DbConnection.Close();
 

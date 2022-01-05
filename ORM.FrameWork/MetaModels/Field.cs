@@ -54,7 +54,7 @@ namespace ORM_FrameWork.MetaModels
             if(IsForeignKey)
             {
                 object obj = ORMapper.GetEntity(Type).PKey.GetValue(val);
-                return ORMapper.GetEntity(Type).PKey.ToColumnType(obj); // for example type is student datatype // Type.GetEntity() == ORMapper.GetEntity(Type)
+                return ORMapper.GetEntity(Type).PKey.ToColumnType(obj); // for example type is jDeveloper datatype // Type.GetEntity() == ORMapper.GetEntity(Type)
             }
 
             //if (Type == ColumnType)
@@ -75,6 +75,11 @@ namespace ORM_FrameWork.MetaModels
 
         public object ToFieldType (object val)
         {
+            if (IsForeignKey)
+            {
+                return ORMapper.Create(Type, val);
+            }
+
             if (Type == typeof(bool))
             {
                 if (val is int)

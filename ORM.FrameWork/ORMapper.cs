@@ -24,7 +24,7 @@ namespace ORM_FrameWork
         }
 
 
-        public static void Insert(object obj)
+        public static void SaveToDb(object obj)
         {
             Entity entity = GetEntity(obj);
                    
@@ -45,14 +45,14 @@ namespace ORM_FrameWork
                 if (f > 0) 
                 { 
                     command.CommandText += ", "; 
-                    insert += "', "; 
+                    insert += ", "; 
                 }
                 command.CommandText += entity.Fields[f].ColumnName;             
                
-                insert += "'"+(entity.Fields[f].GetValue(obj));
+                insert += /*"'"+*/ "@insert" + f.ToString();
 
                 parameter = command.CreateParameter();
-                parameter.ParameterName = ("p" + f.ToString());
+                parameter.ParameterName = ("@insert" + f.ToString());
                 parameter.Value = entity.Fields[f].ToColumnType(entity.Fields[f].GetValue(obj));
                 command.Parameters.Add(parameter);
 
@@ -64,22 +64,22 @@ namespace ORM_FrameWork
                     else
                         conflict += ", ";
   
-                    conflict += (entity.Fields[f].ColumnName + " = '" + (entity.Fields[f].GetValue(obj))+"'");
+                    conflict += (entity.Fields[f].ColumnName + " = " + ("@conflict" + f.ToString() /*+ "'"*/));
 
                     parameter = command.CreateParameter();
-                    parameter.ParameterName = ("u" + f.ToString());
+                    parameter.ParameterName = ("@conflict" + f.ToString());
                     parameter.Value = entity.Fields[f].ToColumnType(entity.Fields[f].GetValue(obj));
                     command.Parameters.Add(parameter);
                 }
             }
-            command.CommandText += (") VALUES (" + insert + "') " + conflict);
+            command.CommandText += (") VALUES (" + insert + ") " + conflict);
 
             command.ExecuteNonQuery();
             command.Dispose();
 
         }
 
-        private static object Create(Type type, NpgsqlDataReader reader)
+        internal static object Create(Type type, NpgsqlDataReader reader)
         {
             object obj = Activator.CreateInstance(type);
 
@@ -91,15 +91,15 @@ namespace ORM_FrameWork
             return obj;
         }
 
-        private static object Create(Type type, object pKey)
+        internal static object Create(Type type, object pKey)
         {
             NpgsqlCommand command = new NpgsqlCommand();
             command.Connection = DbConnection;
 
-            command.CommandText = GetEntity(type).GetSql() + " WHERE " + GetEntity(type).PKey.ColumnName + $" = '{pKey}'";
+            command.CommandText = GetEntity(type).GetSql() + " WHERE " + GetEntity(type).PKey.ColumnName + "= @pKey";
 
             NpgsqlParameter parameter = command.CreateParameter();
-            parameter.ParameterName = ":pKey";
+            parameter.ParameterName = "@pKey";
             parameter.Value = pKey;
             command.Parameters.Add(parameter);
 

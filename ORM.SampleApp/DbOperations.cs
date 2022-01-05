@@ -28,7 +28,7 @@ namespace ORM.SampleApp
             m1.HireDate = new DateTime(1999, 1, 2);     
             m1.Salary = 4500;
 
-            ORMapper.Insert(m1);
+            ORMapper.SaveToDb(m1);
 
 
             Console.WriteLine("\n");
@@ -45,7 +45,26 @@ namespace ORM.SampleApp
             m2.Salary += 250;
 
             Console.WriteLine("\nSalary for " + m2.FirstName + " " + m2.LastName + " is " + m2.Salary.ToString() + " Dollars.");
-            ORMapper.Insert(m2);
+            ORMapper.SaveToDb(m2);
+
+        }
+
+        // Foreign Key
+        public static void GetMentorAndShowDepartments()
+        {
+            Console.WriteLine("\nGet Mentor with his departments");
+
+            Mentor m3 = ORMapper.GetByID<Mentor>("m1");
+
+            Department dep = new Department();
+            dep.ID = "d1";
+            dep.Name = "DevOps";
+            dep.Mentor = m3;
+
+            ORMapper.SaveToDb(dep);
+
+            //Department dep = ORMapper.GetByID<Department>("d1");
+            //Console.WriteLine("\n" + dep.Name + " Mentor: " + dep.Mentor.FirstName + " " + dep.Mentor.LastName);
 
         }
 
