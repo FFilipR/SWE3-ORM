@@ -20,9 +20,10 @@ namespace ORM_SampleApp
             ORMapper.DbConnection = new NpgsqlConnection(connectionString);
             ORMapper.DbConnection.Open();
 
-            DbOperations.InsertObject();
+            DbOperations.InsertMentor();
             DbOperations.UpdateMentorSalary();
-            DbOperations.GetMentorAndShowDepartments();
+            DbOperations.GetDepartmentsMentor();
+            DbOperations.GetAllMentorsDepartments();
 
             ORMapper.DbConnection.Close();
 

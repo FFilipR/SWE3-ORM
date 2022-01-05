@@ -40,23 +40,24 @@ namespace ORM_FrameWork
 
             bool fr = true;
 
-            for (int f = 0; f < entity.Fields.Length; f++)
+            for (int f = 0; f < entity.IntFields.Length; f++)
             {
+              
                 if (f > 0) 
                 { 
                     command.CommandText += ", "; 
                     insert += ", "; 
                 }
-                command.CommandText += entity.Fields[f].ColumnName;             
+                command.CommandText += entity.IntFields[f].ColumnName;             
                
-                insert += /*"'"+*/ "@insert" + f.ToString();
+                insert += "@insert" + f.ToString();
 
                 parameter = command.CreateParameter();
                 parameter.ParameterName = ("@insert" + f.ToString());
-                parameter.Value = entity.Fields[f].ToColumnType(entity.Fields[f].GetValue(obj));
+                parameter.Value = entity.IntFields[f].ToColumnType(entity.IntFields[f].GetValue(obj));
                 command.Parameters.Add(parameter);
 
-                if (!entity.Fields[f].IsPrimaryKey)
+                if (!entity.IntFields[f].IsPrimaryKey)
                 {
 
                     if (fr)
@@ -64,11 +65,11 @@ namespace ORM_FrameWork
                     else
                         conflict += ", ";
   
-                    conflict += (entity.Fields[f].ColumnName + " = " + ("@conflict" + f.ToString() /*+ "'"*/));
+                    conflict += (entity.IntFields[f].ColumnName + " = " + ("@conflict" + f.ToString() ));
 
                     parameter = command.CreateParameter();
                     parameter.ParameterName = ("@conflict" + f.ToString());
-                    parameter.Value = entity.Fields[f].ToColumnType(entity.Fields[f].GetValue(obj));
+                    parameter.Value = entity.IntFields[f].ToColumnType(entity.IntFields[f].GetValue(obj));
                     command.Parameters.Add(parameter);
                 }
             }
@@ -79,43 +80,80 @@ namespace ORM_FrameWork
 
         }
 
-        internal static object Create(Type type, NpgsqlDataReader reader)
+        internal static object Create(Type type, NpgsqlDataReader reader, ICollection<object> cache)
         {
-            object obj = Activator.CreateInstance(type);
 
-            foreach(Field f in GetEntity(type).Fields)
+
+            Entity entity = GetEntity(type);
+
+            object pKey = entity.PKey.ToFieldType(reader.GetValue(reader.GetOrdinal(entity.PKey.ColumnName)), cache, reader);
+            object obj = CacheSearch(type, pKey, cache);
+
+            if(obj == null)
             {
-                f.SetValue(obj, f.ToFieldType(reader.GetValue(reader.GetOrdinal(f.ColumnName))));
+                if (cache == null)
+                    cache = new List<object>();
+
+                cache.Add(obj = Activator.CreateInstance(type));
             }
+
+            foreach(Field f in entity.IntFields)
+            {
+             
+                f.SetValue(obj, f.ToFieldType(reader.GetValue(reader.GetOrdinal(f.ColumnName)), cache, reader));
+            }
+
+            reader.Close();
+
+            
+
+            foreach (Field f in entity.ExtFields)
+            {
+                f.SetValue(obj, f.FillList(Activator.CreateInstance(f.Type), obj, cache ));
+            }
+
 
             return obj;
         }
 
-        internal static object Create(Type type, object pKey)
+        internal static object Create(Type type, object pKey, ICollection<object> cache)
         {
-            NpgsqlCommand command = new NpgsqlCommand();
-            command.Connection = DbConnection;
+            object obj = CacheSearch(type, pKey, cache);
 
-            command.CommandText = GetEntity(type).GetSql() + " WHERE " + GetEntity(type).PKey.ColumnName + "= @pKey";
+            if(obj == null)
+            { 
+                NpgsqlCommand command = new NpgsqlCommand();
+                command.Connection = DbConnection;
 
-            NpgsqlParameter parameter = command.CreateParameter();
-            parameter.ParameterName = "@pKey";
-            parameter.Value = pKey;
-            command.Parameters.Add(parameter);
+                command.CommandText = GetEntity(type).GetSql() + " WHERE " + GetEntity(type).PKey.ColumnName + "= @pKey";
 
-            object obj = null;
-            NpgsqlDataReader reader = command.ExecuteReader();
+                NpgsqlParameter parameter = command.CreateParameter();
+                parameter.ParameterName = "@pKey";
+                parameter.Value = pKey;
+                command.Parameters.Add(parameter);
 
-            while(reader.Read())
-            {
-                obj = Create(type, reader);
+                NpgsqlDataReader reader = command.ExecuteReader();
+
+                if(reader.Read())
+                {
+
+                    //Object[] readerValues = new Object[reader.FieldCount]; // Saving reader values into object[]
+                    //int fieldCount = reader.GetValues(readerValues);
+
+                    //for (int i = 0; i < fieldCount; i++)
+                    //    Console.WriteLine(readerValues[i]);
+
+                    //reader.Close();
+
+                    obj = Create(type, reader, cache);
+                }
+                    
+                
+                reader.Close();
+                command.Dispose();
             }
 
-            reader.Close();
-            reader.Dispose();
-            command.Dispose();
-
-            if (obj == null)
+            if (obj.Equals(null))
                 throw new DataException("No data has been found.");
 
             return obj;
@@ -123,8 +161,25 @@ namespace ORM_FrameWork
 
         public static T GetByID<T>(object pKey)
         {
-            return (T) Create(typeof(T), pKey);
+            return (T) Create(typeof(T), pKey, null);
         }
 
+
+        internal static object CacheSearch(Type type, object pKey, ICollection<object> cache)
+        {
+            if (cache != null)
+            {
+                foreach (object obj in cache)
+                {
+                    if (obj.GetType() != type)
+                        continue;
+
+                    if (GetEntity(type).PKey.GetValue(obj).Equals(pKey))
+                        return obj;
+                }
+            }
+
+            return null;
+        }
     }
 }

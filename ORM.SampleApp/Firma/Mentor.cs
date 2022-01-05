@@ -15,8 +15,8 @@ namespace ORM.SampleApp.Firma
         [Field(ColumnName ="HDate")]
         public DateTime HireDate { get; set; }
 
-        //[ForeignKey(ColumnName = "KMentor")]
-        //public List<Department> Departments { get; private set; }
+        [ForeignKey(ColumnName = "KMentor")]
+        public List<Department> Departments { get; private set; }
 
     }
 }

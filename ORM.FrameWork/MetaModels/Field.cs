@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Npgsql;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -28,9 +29,12 @@ namespace ORM_FrameWork.MetaModels
         }
         public string ColumnName { get; internal set; }
         public Type ColumnType { get; internal set; } // on DB level
-        public bool IsNullable { get; internal set; } 
-        public bool IsPrimaryKey { get; internal set; } 
-        public bool IsForeignKey { get; internal set; }
+        public bool IsNullable { get; internal set; } = false;
+        public bool IsPrimaryKey { get; internal set; } = false;
+        public bool IsForeignKey { get; internal set; } = false;
+        public bool IsExternal { get; internal set; } = false;
+
+
         public object GetValue (object obj)
         {
             if (Member is PropertyInfo)
@@ -73,11 +77,12 @@ namespace ORM_FrameWork.MetaModels
             return val;
         }
 
-        public object ToFieldType (object val)
+        public object ToFieldType (object val, ICollection<object> cache, NpgsqlDataReader reader)
         {
             if (IsForeignKey)
             {
-                return ORMapper.Create(Type, val);
+                reader.Close();
+                return ORMapper.Create(Type, val, cache);
             }
 
             if (Type == typeof(bool))
@@ -99,11 +104,36 @@ namespace ORM_FrameWork.MetaModels
 
             if (Type.IsEnum)
                 return Enum.ToObject(Type, val);
-        
-
-
+       
             return val;
         }
 
-    }
+        public object FillList(object listObj, object obj, ICollection<object> cache)
+        {
+
+            NpgsqlCommand command = ORMapper.DbConnection.CreateCommand();
+            command.CommandText = ORMapper.GetEntity(Type.GenericTypeArguments[0]).GetSql() + " WHERE " + ColumnName + " = @fKey";
+
+            NpgsqlParameter parameter = command.CreateParameter();
+            parameter.ParameterName = "@fKey";
+            parameter.Value = Entity.PKey.GetValue(obj);
+            command.Parameters.Add(parameter);
+
+            NpgsqlDataReader reader = command.ExecuteReader();
+            //Object[] readerValues = new Object[reader.FieldCount];
+
+            if (reader.Read()) // or while ?
+            {
+                listObj.GetType().GetMethod("Add").Invoke(listObj, new object[] 
+                { 
+                    ORMapper.Create(Type.GenericTypeArguments[0], reader, cache)   // creating object with reader method and type and return it in the listObj
+                });
+            }
+            reader.Close();
+            reader.Dispose();
+            command.Dispose();
+
+            return listObj;
+        }
+    } 
 }

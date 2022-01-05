@@ -1,5 +1,6 @@
 ﻿using ORM_FrameWork.Attributes;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,6 +11,13 @@ namespace ORM_FrameWork.MetaModels
 {
     internal class Entity
     {
+        public Type Member { get; private set; }
+        public string TableName { get; set; }
+        public Field PKey { get;  set; } // what field is primary key
+
+        public Field[] ExtFields { get; private set; }
+        public Field[] IntFields { get; private set; }
+
         public Entity(Type type)
         {
             this.Member = type;
@@ -22,12 +30,9 @@ namespace ORM_FrameWork.MetaModels
             else
                 TableName = typeAttr.TableName;
             
-            this.Fields = getFields(type).ToArray();         
+            IntFields = getFields(type).Where(f => (!f.IsExternal)).ToArray();
+            ExtFields = getFields(type).Where(f => f.IsExternal).ToArray();
         }
-        public Type Member { get; private set; }
-        public string TableName { get; set; }
-        public Field[] Fields { get; private set; }
-        public Field PKey { get;  set; } // what field is primary key
 
         public List<Field> getFields(Type type)
         {
@@ -52,7 +57,10 @@ namespace ORM_FrameWork.MetaModels
                     field.ColumnName = (fieldAttr?.ColumnName ?? property.Name); // if ColumnName doesn't exist, we take Name
                     field.ColumnType = (fieldAttr?.ColumnType ?? property.PropertyType); // if ColumnType doesn't exist, we take the type of Property
                     field.IsNullable = fieldAttr.Nullable;
-                    field.IsForeignKey = (fieldAttr is ForeignKeyAttribute);
+
+                    if (field.IsForeignKey = (fieldAttr is ForeignKeyAttribute))                   
+                        field.IsExternal = typeof(IEnumerable).IsAssignableFrom(property.PropertyType);
+                                    
                 }
                 else
                 {
@@ -78,12 +86,12 @@ namespace ORM_FrameWork.MetaModels
 
             string str = "SELECT ";
 
-            for(int i = 0; i < Fields.Length; i++)
+            for(int f = 0; f < IntFields.Length; f++)
 			{
-                if (i > 0) 
+                if (f > 0) 
                     str += ", ";
 
-                str += prefix.Trim() + Fields[i].ColumnName;
+                str += prefix.Trim() + IntFields[f].ColumnName;
             }
 
             str += (" FROM " + TableName);
