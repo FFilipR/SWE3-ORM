@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Npgsql;
 using ORM.SampleApp.Firma;
 using ORM_FrameWork;
+using ORM_SampleApp;
 
 namespace ORM.SampleApp
 {
@@ -16,7 +17,7 @@ namespace ORM.SampleApp
         public static void InsertMentor()
         {
 
-            Console.WriteLine("Inserting Mentor into DB.");
+            Console.WriteLine("->Inserting Mentor into DB.");
 
             Mentor m1 = new Mentor();
 
@@ -29,32 +30,35 @@ namespace ORM.SampleApp
             m1.Salary = 4500;
 
             ORMapper.SaveToDb(m1);
+            Console.WriteLine("_______________________________________________________________________");
 
-
-            Console.WriteLine("\n");
         }
 
         public static void UpdateMentorSalary()
         {
-            Console.WriteLine("Getting Mentor from DB.");
-            Mentor m2 = ORMapper.GetByID<Mentor>("m1"); // get Mentor with id m1
+            Console.WriteLine("\n->Getting Mentor from DB.");
 
-            Console.WriteLine($"\nSalary for {m2.FirstName} {m2.LastName} is { m2.Salary.ToString()} Dollars.");
+            Mentor m2 = ORMapper.GetByID<Mentor>("m1", Program.connectionString); // get Mentor with id m1
 
-            Console.WriteLine("\nMentors salary raises for 250$.");
+            Console.WriteLine($"Salary for {m2.FirstName} {m2.LastName} is { m2.Salary} Dollars.");
+
+            Console.WriteLine("Mentors salary raises for 250$.");
             m2.Salary += 250;
 
-            Console.WriteLine($"\nSalary for {m2.FirstName} {m2.LastName} is { m2.Salary.ToString()} Dollars.");
+            Console.WriteLine($"Salary for {m2.FirstName} {m2.LastName} is { m2.Salary} Dollars.");
             ORMapper.SaveToDb(m2);
+            Console.WriteLine("_______________________________________________________________________");
+
 
         }
 
         // Foreign Key 1:n 
         public static void GetDepartmentsMentor()
         {
-            Console.WriteLine("\nGet Department with his Mentor");
+            Console.WriteLine("\n->Getting Department with his Mentor.");
 
-            Mentor m3 = ORMapper.GetByID<Mentor>("m1");
+
+            Mentor m3 = ORMapper.GetByID<Mentor>("m1", Program.connectionString);
 
             Department dep = new Department();
             dep.ID = "d1";
@@ -63,25 +67,42 @@ namespace ORM.SampleApp
 
             ORMapper.SaveToDb(dep);
 
-            dep = ORMapper.GetByID<Department>("d1");
-            Console.WriteLine("\n" + dep.Name + " Mentor: " + dep.Mentor.FirstName + " " + dep.Mentor.LastName);
+            Department dep2 = new Department();
+            dep2.ID = "d2";
+            dep2.Name = "C#";
+            dep2.Mentor = m3;
+            ORMapper.SaveToDb(dep2);
+
+
+            Department dep3 = new Department();
+            dep3.ID = "d3";
+            dep3.Name = "Java";
+            dep3.Mentor = m3;
+            ORMapper.SaveToDb(dep3);
+
+            dep = ORMapper.GetByID<Department>("d1", Program.connectionString);
+            Console.WriteLine($"{dep.Name} Mentor: {dep.Mentor.FirstName} {dep.Mentor.LastName}");
+            Console.WriteLine("_______________________________________________________________________");
+
 
         }
         // Foreign key n:1
         public static void GetAllMentorsDepartments()
         {
-            Console.WriteLine("\nGet Mentor with all departments he mentors.");
+            Console.WriteLine("\n->Get Mentor with all departments he mentors.");
+            string departments = string.Empty;
 
-            Mentor m4 = ORMapper.GetByID<Mentor>("m1");
-            Console.WriteLine($"\nMentor {m4.FirstName} {m4.LastName} is mentoring in following Departments: ");
+            Mentor m4 = ORMapper.GetByID<Mentor>("m1", Program.connectionString);
 
             foreach (Department dep in m4.Departments)
             {
-                Console.WriteLine(dep.Name);
+                departments += $"{dep.Name} ";
             }
 
-        }
+            Console.WriteLine($"Mentor {m4.FirstName} {m4.LastName} is mentoring in following Departments: {departments}");
+            Console.WriteLine("_______________________________________________________________________");
 
+        }
 
     }
 }

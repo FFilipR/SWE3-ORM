@@ -64,6 +64,7 @@ INSERT INTO Mentors(Salary, HDate, ID, FirstName, LastName, BDate, Sex) VALUES (
 
 DELETE FROM Mentors WHERE ID = 'm1';
 
+SELECT ID, Name, KMentor FROM Departments WHERE KMentor = 'm1'
 
 
 

@@ -12,7 +12,9 @@ namespace ORM_FrameWork
     public class ORMapper
     {
         private static Dictionary<Type, Entity> Entities = new Dictionary<Type, Entity>();
-        public static NpgsqlConnection DbConnection { get; set; } 
+        public static NpgsqlConnection DbConnection { get; set; }
+
+        public static NpgsqlCommand tempCommand = new NpgsqlCommand();
         internal static Entity GetEntity(object obj) 
         {
             Type type = ((obj is Type) ? (Type) obj : obj.GetType()); // if obj then GetType , otherwise type
@@ -36,8 +38,6 @@ namespace ORM_FrameWork
             string conflict = "ON CONFLICT (" + entity.PKey.ColumnName + ") DO UPDATE SET ";
             string insert = string.Empty;
 
-            NpgsqlParameter parameter;
-
             bool fr = true;
 
             for (int f = 0; f < entity.IntFields.Length; f++)
@@ -52,7 +52,7 @@ namespace ORM_FrameWork
                
                 insert += "@insert" + f.ToString();
 
-                parameter = command.CreateParameter();
+                NpgsqlParameter parameter = command.CreateParameter();
                 parameter.ParameterName = ("@insert" + f.ToString());
                 parameter.Value = entity.IntFields[f].ToColumnType(entity.IntFields[f].GetValue(obj));
                 command.Parameters.Add(parameter);
@@ -80,16 +80,14 @@ namespace ORM_FrameWork
 
         }
 
-        internal static object Create(Type type, NpgsqlDataReader reader, ICollection<object> cache)
+        internal static object Create(Type type, NpgsqlDataReader reader, ICollection<object> cache,string connectionString)
         {
-
-
+            
             Entity entity = GetEntity(type);
+            object pKey = entity.PKey.ToFieldType(reader.GetValue(reader.GetOrdinal(entity.PKey.ColumnName)), cache, reader, connectionString);
+            object obj = CacheSearch(type, reader, cache);
 
-            object pKey = entity.PKey.ToFieldType(reader.GetValue(reader.GetOrdinal(entity.PKey.ColumnName)), cache, reader);
-            object obj = CacheSearch(type, pKey, cache);
-
-            if(obj == null)
+            if (obj == null)
             {
                 if (cache == null)
                     cache = new List<object>();
@@ -99,31 +97,32 @@ namespace ORM_FrameWork
 
             foreach(Field f in entity.IntFields)
             {
-             
-                f.SetValue(obj, f.ToFieldType(reader.GetValue(reader.GetOrdinal(f.ColumnName)), cache, reader));
+                object readerVal = reader.GetValue(reader.GetOrdinal(f.ColumnName));
+                object fieldVal = f.ToFieldType(readerVal, cache, reader, connectionString);
+                f.SetValue(obj, fieldVal); 
             }
-
-            reader.Close();
-
-            
 
             foreach (Field f in entity.ExtFields)
             {
-                f.SetValue(obj, f.FillList(Activator.CreateInstance(f.Type), obj, cache ));
+
+                object list = f.FillList(Activator.CreateInstance(f.Type), obj, cache, connectionString);
+                f.SetValue(obj, list);
             }
 
 
             return obj;
         }
 
-        internal static object Create(Type type, object pKey, ICollection<object> cache)
-        {
+        internal static object Create(Type type, object pKey, ICollection<object> cache, string connectionString)
+        {     
+
             object obj = CacheSearch(type, pKey, cache);
 
             if(obj == null)
             { 
                 NpgsqlCommand command = new NpgsqlCommand();
-                command.Connection = DbConnection;
+                command.Connection = new NpgsqlConnection(connectionString);
+                command.Connection.Open();
 
                 command.CommandText = GetEntity(type).GetSql() + " WHERE " + GetEntity(type).PKey.ColumnName + "= @pKey";
 
@@ -132,25 +131,15 @@ namespace ORM_FrameWork
                 parameter.Value = pKey;
                 command.Parameters.Add(parameter);
 
-                NpgsqlDataReader reader = command.ExecuteReader();
-
-                if(reader.Read())
+                using (var dataReader = command.ExecuteReader()) // while using is active, data reader is open. It isn't required to reader.dispose and reader.dispose
                 {
-
-                    //Object[] readerValues = new Object[reader.FieldCount]; // Saving reader values into object[]
-                    //int fieldCount = reader.GetValues(readerValues);
-
-                    //for (int i = 0; i < fieldCount; i++)
-                    //    Console.WriteLine(readerValues[i]);
-
-                    //reader.Close();
-
-                    obj = Create(type, reader, cache);
+                    while (dataReader.Read())
+                    {
+                        obj = Create(type, dataReader, cache, connectionString);
+                    }
                 }
-                    
-                
-                reader.Close();
-                command.Dispose();
+                command.Connection.Close();
+                command.Dispose();         
             }
 
             if (obj.Equals(null))
@@ -159,9 +148,9 @@ namespace ORM_FrameWork
             return obj;
         }
 
-        public static T GetByID<T>(object pKey)
+        public static T GetByID<T>(object pKey, string connectionString)
         {
-            return (T) Create(typeof(T), pKey, null);
+            return (T) Create(typeof(T), pKey, null, connectionString);
         }
 
 

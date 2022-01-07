@@ -2,16 +2,16 @@
 using Npgsql;
 using ORM.SampleApp;
 using ORM_FrameWork;
-using ORM_FrameWork.Attributes;
+using ORM_FrameWork.MetaModels;
 using System;
 namespace ORM_SampleApp
 {
     public class Program
     {
         static IConfiguration config;
-        static string connectionString;
+        public static string connectionString;
 
-        static void Main()
+        public static void Main()
         {
             // get connection data from json file
             config = new ConfigurationBuilder().AddJsonFile("dbSettings.json", false, true).Build();
@@ -28,8 +28,7 @@ namespace ORM_SampleApp
             ORMapper.DbConnection.Close();
 
 
-
-         }
+        }
      
     
     }

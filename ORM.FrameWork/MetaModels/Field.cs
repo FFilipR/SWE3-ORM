@@ -15,6 +15,7 @@ namespace ORM_FrameWork.MetaModels
             this.Entity = entity;
         }
         public Entity Entity { get; internal set; } // entity who it belongs 
+        public static NpgsqlConnection DbConnection { get; set; }
         public MemberInfo Member { get; internal set; }
 
         public Type Type // in Object
@@ -77,13 +78,11 @@ namespace ORM_FrameWork.MetaModels
             return val;
         }
 
-        public object ToFieldType (object val, ICollection<object> cache, NpgsqlDataReader reader)
+        public object ToFieldType (object val, ICollection<object> cache, NpgsqlDataReader reader, string connectionString)
         {
             if (IsForeignKey)
-            {
-                reader.Close();
-                return ORMapper.Create(Type, val, cache);
-            }
+                return ORMapper.Create(Type, val, cache, connectionString);
+            
 
             if (Type == typeof(bool))
             {
@@ -108,10 +107,11 @@ namespace ORM_FrameWork.MetaModels
             return val;
         }
 
-        public object FillList(object listObj, object obj, ICollection<object> cache)
+        public object FillList(object listObj, object obj, ICollection<object> cache, string connectionString)
         {
-
-            NpgsqlCommand command = ORMapper.DbConnection.CreateCommand();
+            Field.DbConnection = new NpgsqlConnection(connectionString);
+            Field.DbConnection.Open();
+            NpgsqlCommand command = Field.DbConnection.CreateCommand();
             command.CommandText = ORMapper.GetEntity(Type.GenericTypeArguments[0]).GetSql() + " WHERE " + ColumnName + " = @fKey";
 
             NpgsqlParameter parameter = command.CreateParameter();
@@ -119,20 +119,18 @@ namespace ORM_FrameWork.MetaModels
             parameter.Value = Entity.PKey.GetValue(obj);
             command.Parameters.Add(parameter);
 
-            NpgsqlDataReader reader = command.ExecuteReader();
-            //Object[] readerValues = new Object[reader.FieldCount];
-
-            if (reader.Read()) // or while ?
+            using (var dataReader = command.ExecuteReader())
             {
-                listObj.GetType().GetMethod("Add").Invoke(listObj, new object[] 
-                { 
-                    ORMapper.Create(Type.GenericTypeArguments[0], reader, cache)   // creating object with reader method and type and return it in the listObj
-                });
+                while (dataReader.Read())
+                {
+                    listObj.GetType().GetMethod("Add").Invoke(listObj, new object[]
+                    {
+                        ORMapper.Create(Type.GenericTypeArguments[0], dataReader, cache, connectionString)   // creating object with reader method and type and return it in the listObj
+                    });
+                }
             }
-            reader.Close();
-            reader.Dispose();
             command.Dispose();
-
+            Field.DbConnection.Close();
             return listObj;
         }
     } 
