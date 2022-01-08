@@ -24,6 +24,7 @@ namespace ORM_SampleApp
             DbOperations.UpdateMentorSalary();
             DbOperations.GetDepartmentsMentor();
             DbOperations.GetAllMentorsDepartments();
+            DbOperations.MtoNRelation();
 
             ORMapper.DbConnection.Close();
 

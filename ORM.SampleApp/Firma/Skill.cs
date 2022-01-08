@@ -16,6 +16,9 @@ namespace ORM.SampleApp.Firma
 
         [ForeignKey(ColumnName = "KMentor")]
         public Mentor Mentor { get; set; }
+
+        [ForeignKey(AssigmentTable = "jDevs_skills", ColumnName ="KSkill", RemoteColumnName = "KjDev")]
+        public List<JuniorDeveloper> JDevs { get; set; } = new List<JuniorDeveloper>();
         
     }
 }

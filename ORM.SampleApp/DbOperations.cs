@@ -24,12 +24,12 @@ namespace ORM.SampleApp
             m1.ID = "m1";
             m1.FirstName = "Larry";
             m1.LastName = "Bird";
-            m1.Sex = (int)Person.Gender.MALE;
             m1.BirthDate = new DateTime(1969, 9, 10);
             m1.HireDate = new DateTime(1999, 1, 2);     
+            m1.Sex = (int)Person.Gender.MALE;
             m1.Salary = 4500;
 
-            ORMapper.SaveToDb(m1);
+            ORMapper.SaveToDb(m1, Program.connectionString);
             Console.WriteLine("_______________________________________________________________________");
 
         }
@@ -46,7 +46,7 @@ namespace ORM.SampleApp
             m2.Salary += 250;
 
             Console.WriteLine($"Salary for {m2.FirstName} {m2.LastName} is { m2.Salary} Dollars.");
-            ORMapper.SaveToDb(m2);
+            ORMapper.SaveToDb(m2, Program.connectionString);
             Console.WriteLine("_______________________________________________________________________");
 
 
@@ -65,20 +65,20 @@ namespace ORM.SampleApp
             dep.Name = "DevOps";
             dep.Mentor = m3;
 
-            ORMapper.SaveToDb(dep);
+            ORMapper.SaveToDb(dep, Program.connectionString);
 
             Department dep2 = new Department();
             dep2.ID = "d2";
-            dep2.Name = "C#";
+            dep2.Name = "WebDev";
             dep2.Mentor = m3;
-            ORMapper.SaveToDb(dep2);
+            ORMapper.SaveToDb(dep2, Program.connectionString);
 
 
             Department dep3 = new Department();
             dep3.ID = "d3";
-            dep3.Name = "Java";
+            dep3.Name = "SWE";
             dep3.Mentor = m3;
-            ORMapper.SaveToDb(dep3);
+            ORMapper.SaveToDb(dep3, Program.connectionString);
 
             dep = ORMapper.GetByID<Department>("d1", Program.connectionString);
             Console.WriteLine($"{dep.Name} Mentor: {dep.Mentor.FirstName} {dep.Mentor.LastName}");
@@ -101,6 +101,55 @@ namespace ORM.SampleApp
 
             Console.WriteLine($"Mentor {m4.FirstName} {m4.LastName} is mentoring in following Departments: {departments}");
             Console.WriteLine("_______________________________________________________________________");
+
+        }
+
+        // m:n
+        public static void MtoNRelation()
+        {
+            Console.WriteLine("\n-> M to N Relation");
+
+            Skill skill = new Skill();
+            skill.ID = "s1";
+            skill.Name = "C#";
+            skill.Mentor = ORMapper.GetByID<Mentor>("m1", Program.connectionString);
+
+            JuniorDeveloper jDev1 = new JuniorDeveloper();
+            jDev1.ID = "jd1";
+            jDev1.FirstName = "Eva";
+            jDev1.LastName = "Atkinson";
+            jDev1.BirthDate = new DateTime(1998, 3, 12);
+            jDev1.HireDate = new DateTime(2021, 2, 28);
+            jDev1.Sex = (int)Person.Gender.FEMALE;
+            jDev1.Salary = 2000;
+            ORMapper.SaveToDb(jDev1, Program.connectionString);
+
+            JuniorDeveloper jDev2 = new JuniorDeveloper();
+            jDev2.ID = "jd2";
+            jDev2.FirstName = "Jeniffer";
+            jDev2.LastName = "Rhodes";
+            jDev2.BirthDate = new DateTime(1999, 6, 12);
+            jDev2.HireDate = new DateTime(2021, 2, 28);
+            jDev2.Sex = (int)Person.Gender.FEMALE;
+            jDev2.Salary = 2000;
+            ORMapper.SaveToDb(jDev2, Program.connectionString);
+
+            skill.JDevs.Add(jDev1);
+            skill.JDevs.Add(jDev2);
+            ORMapper.SaveToDb(skill, Program.connectionString);
+
+            skill = ORMapper.GetByID<Skill>("s1", Program.connectionString);
+
+
+            string devs = string.Empty;
+            foreach (JuniorDeveloper jd in skill.JDevs)
+            {
+                devs += $"{jd.FirstName} {jd.LastName}; ";
+            }
+
+            Console.WriteLine($"Junior Developers that are attending  {skill.Name} are: {devs}");
+            Console.WriteLine("_______________________________________________________________________");
+
 
         }
 
