@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using ORM.FrameWork.Cache;
 using ORM.SampleApp.Firma;
 using ORM_FrameWork;
 using ORM_SampleApp;
@@ -131,7 +132,7 @@ namespace ORM.SampleApp
             jDev2.BirthDate = new DateTime(1999, 6, 12);
             jDev2.HireDate = new DateTime(2021, 2, 25);
             jDev2.Sex = (int)Person.Gender.MALE;
-            jDev2.Salary = 2100;
+            jDev2.Salary = 2500;
             ORMapper.SaveToDb(jDev2, Program.connectionString);
 
             skill.JDevs.Add(jDev1);
@@ -171,6 +172,29 @@ namespace ORM.SampleApp
             }
 
             Console.WriteLine($"Junior developers in department {jdevs}");
+            Console.WriteLine("_______________________________________________________________________");
+
+        }
+
+        public static void CacheDemo()
+        {
+            Console.WriteLine("\n->Demonstaration of Cache.");
+
+            Console.WriteLine("\nNo Cache:");
+            for (int f=0; f<5; f++)
+            {
+                Mentor m1 = ORMapper.GetByID<Mentor>("m1", Program.connectionString);
+                Console.WriteLine($"Mentor Object with ID: ({m1.ID}) -> instance number: {m1.NumberOfInstance}");
+            }
+
+            Console.WriteLine("\nWith Cache:");
+            ORMapper.Cache = new CacheImpl();
+            for (int f = 0; f < 5; f++)
+            {
+                Mentor m1 = ORMapper.GetByID<Mentor>("m1", Program.connectionString);
+                Console.WriteLine($"Mentor Object with ID: ({m1.ID}) -> instance number: {m1.NumberOfInstance}");
+            }
+
             Console.WriteLine("_______________________________________________________________________");
 
         }

@@ -18,6 +18,10 @@ namespace ORM.SampleApp.Firma
         public DateTime BirthDate { get; set; }
         public int Sex { get; set; }
 
+        protected static int InstanceCounter = 1;
+
+        [Ignore]
+        public int NumberOfInstance { get; protected set; } = InstanceCounter++;
         public enum Gender : int
         {
             MALE = 0,

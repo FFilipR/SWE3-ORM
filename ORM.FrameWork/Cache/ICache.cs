@@ -7,16 +7,13 @@ using System.Threading.Tasks;
 namespace ORM.FrameWork.Cache
 {
     public interface ICache
-    { 
-        object Get(Type t, object pk);
-        void Put(object obj);
-
-        void Remove(object obj);
-
-        bool Contains(Type t, object pk);
-
+    {
+        bool Contains(Type type, object pKey);
+        object Get(Type type, object pKey);
         bool Contains(object obj);
-
+        void Put(object obj);
         bool HasChanged(object obj);
+        void Remove(object obj);
+   
     }
 }

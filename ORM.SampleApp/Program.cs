@@ -26,6 +26,7 @@ namespace ORM_SampleApp
             Operations.GetAllMentorsDepartments();
             Operations.MtoNRelation();
             Operations.LazyList();
+            Operations.CacheDemo();
 
             ORMapper.DbConnection.Close();
 

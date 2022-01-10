@@ -17,7 +17,7 @@ namespace ORM_FrameWork
         public static NpgsqlConnection DbConnection { get; set; }
 
         public static NpgsqlCommand tempCommand = new NpgsqlCommand();
-        public static ICache Cache { get; set; }
+        public static ICache Cache { get; set; } 
         internal static Entity GetEntity(object obj) 
         {
             Type type = ((obj is Type) ? (Type) obj : obj.GetType()); // if obj then GetType , otherwise type
@@ -85,13 +85,33 @@ namespace ORM_FrameWork
             command.ExecuteNonQuery();
             command.Dispose();
 
-
             foreach (Field f in entity.ExtFields)
                 f.UpdateRelations(obj, connectionString);
+
+            if (Cache != null)
+                Cache.Put(obj);
             
         }
 
-        internal static object Create(Type type, NpgsqlDataReader reader, ICollection<object> cache,string connectionString)
+        public static void DeleteFromDb(object obj, string connectionString)
+        {
+            Entity entity = GetEntity(obj);
+            NpgsqlCommand command = new NpgsqlCommand();
+            command.Connection = new NpgsqlConnection(connectionString);
+            command.Connection.Open();
+
+            command.CommandText = $"DELETE FROM {entity.TableName} WHERE {entity.PKey.ColumnName} = @pKey";
+
+            NpgsqlParameter parameter = command.CreateParameter();
+            parameter.ParameterName = "@pKey";
+            parameter.Value = entity.PKey.GetValue(obj);
+            command.Parameters.Add(parameter);
+
+            command.Connection.Close();
+            command.Dispose();
+        }
+
+        internal static object Create(Type type, NpgsqlDataReader reader, ICollection<object> cache, string connectionString)
         {
             
             Entity entity = GetEntity(type);
@@ -104,6 +124,8 @@ namespace ORM_FrameWork
                     cache = new List<object>();
 
                 cache.Add(obj = Activator.CreateInstance(type));
+
+                
             }
 
             foreach(Field f in entity.IntFields)
@@ -127,6 +149,8 @@ namespace ORM_FrameWork
                 }
             }
 
+            if (Cache != null)
+                Cache.Put(obj);
 
             return obj;
         }
@@ -136,7 +160,8 @@ namespace ORM_FrameWork
 
             object obj = CacheSearch(type, pKey, cache);
 
-            
+            //object obj = null;
+            //var count = ((cache != null) ? cache.Count : 0);
             if (obj == null)
             {
                 NpgsqlCommand command = new NpgsqlCommand();
@@ -163,9 +188,45 @@ namespace ORM_FrameWork
                 }
                 command.Connection.Close();
                 command.Dispose();
-            }
+             }
 
-            
+            //if (obj.Equals(null))
+            //    throw new DataException("No data has been found.");
+
+            //return obj;
+
+
+
+            //object obj = null;
+            //var locc = ((cache != null) ? cache.Count : 0);
+
+            //NpgsqlCommand command = new NpgsqlCommand();
+            //command.Connection = new NpgsqlConnection(connectionString);
+            //command.Connection.Open();
+
+            //Entity entity = GetEntity(type);
+            //command.CommandText = entity.GetSql() + (string.IsNullOrWhiteSpace(entity.SubsetQuery) ? " WHERE " : " AND ") + GetEntity(type).PKey.ColumnName + " = @pKey";
+
+            //NpgsqlParameter parameter = command.CreateParameter();
+            //parameter.ParameterName = "@pKey";
+            //parameter.Value = pKey;
+            //command.Parameters.Add(parameter);
+
+            //using (var dataReader = command.ExecuteReader()) // while using is active, data reader is open. It isn't required to reader.dispose and reader.dispose
+            //{
+            //    if (dataReader.Read())
+            //    {
+            //        obj = Create(type, dataReader, cache, connectionString);
+            //    }
+            //}
+
+            //command.Connection.Close();
+            //command.Dispose();
+
+
+            //if (Cache != null)
+            //    if ((cache != null) && (cache.Count > count))
+            //        Cache.Put(obj);
 
 
             return obj;
@@ -179,6 +240,9 @@ namespace ORM_FrameWork
 
         internal static object CacheSearch(Type type, object pKey, ICollection<object> cache)
         {
+            if ((Cache != null) && Cache.Contains(type, pKey)) 
+                return Cache.Get(type, pKey);
+
             if (cache != null)
             {
                 foreach (object obj in cache)
@@ -194,6 +258,7 @@ namespace ORM_FrameWork
             return null;
         }
 
+     
         internal static void ListFiller (Type type, object listObj, string sql, IEnumerable<Tuple<string, object>> sqlParameters, string connectionString, ICollection<object> cache = null)
         {
             NpgsqlCommand command = new NpgsqlCommand();
@@ -220,6 +285,7 @@ namespace ORM_FrameWork
                     });
                 }
             }
+    
             command.Connection.Close();
             command.Dispose();
         }
