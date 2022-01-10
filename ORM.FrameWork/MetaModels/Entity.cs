@@ -17,6 +17,12 @@ namespace ORM_FrameWork.MetaModels
 
         public Field[] ExtFields { get; private set; }
         public Field[] IntFields { get; private set; }
+        public Field[] Fields { get; private set; }
+
+        public string SubsetQuery
+        {
+            get; private set;
+        }
 
         public Entity(Type type)
         {
@@ -29,9 +35,10 @@ namespace ORM_FrameWork.MetaModels
             
             else
                 TableName = typeAttr.TableName;
-            
-            IntFields = getFields(type).Where(f => (!f.IsExternal)).ToArray();
-            ExtFields = getFields(type).Where(f => f.IsExternal).ToArray();
+
+            Fields = getFields(type).ToArray();
+            IntFields = Fields.Where(f => (!f.IsExternal)).ToArray();
+            ExtFields = Fields.Where(f => f.IsExternal).ToArray();
         }
 
         public List<Field> getFields(Type type)
@@ -51,15 +58,20 @@ namespace ORM_FrameWork.MetaModels
                     if (fieldAttr is PrimaryKeyAttribute)
                     {
                         PKey = field;
-                        PKey.IsPrimaryKey = true;
+                        PKey.IsPkey = true;
                     }
 
                     field.ColumnName = (fieldAttr?.ColumnName ?? property.Name); // if ColumnName doesn't exist, we take Name
                     field.ColumnType = (fieldAttr?.ColumnType ?? property.PropertyType); // if ColumnType doesn't exist, we take the type of Property
                     field.IsNullable = fieldAttr.Nullable;
 
-                    if (field.IsForeignKey = (fieldAttr is ForeignKeyAttribute))                   
+                    if (field.IsFkey = (fieldAttr is ForeignKeyAttribute))
+                    {
                         field.IsExternal = typeof(IEnumerable).IsAssignableFrom(property.PropertyType);
+                        field.AssigmentTable = ((ForeignKeyAttribute)fieldAttr).AssigmentTable;
+                        field.RemoteColumnName = ((ForeignKeyAttribute)fieldAttr).RemoteColumnName;
+                        field.IsMtoM = (!string.IsNullOrWhiteSpace(field.AssigmentTable));
+                    }
                                     
                 }
                 else
@@ -94,12 +106,30 @@ namespace ORM_FrameWork.MetaModels
                 str += prefix.Trim() + IntFields[f].ColumnName;
             }
 
-            str += (" FROM " + TableName);
+            str += $" FROM {TableName}";
 
             return str;
-
         }
 
-       
+       public Field GetFieldForColumn(string columnName)
+        {
+            foreach (Field f in IntFields)
+            {
+                if (f.ColumnName == columnName)
+                    return f;
+            }
+
+            return null;
+        }
+
+        public Field GetFieldByName (string fieldName)
+        {
+            foreach (Field f in Fields)
+            {
+                if (f.Member.Name == fieldName)
+                    return f;
+            }
+            return null;
+        }
     }
 }

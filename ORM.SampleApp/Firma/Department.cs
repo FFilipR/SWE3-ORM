@@ -1,4 +1,6 @@
-﻿using ORM_FrameWork.Attributes;
+﻿using ORM.FrameWork.Loading;
+using ORM_FrameWork.Attributes;
+using ORM_SampleApp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +12,23 @@ namespace ORM.SampleApp.Firma
     [Entity(TableName ="Departments")]
     public class Department
     {
+        public Department()
+        {
+            JDevs = new LazyLoadingList<JuniorDeveloper>(this, "JDevs", Program.connectionString);
+        }
         [PrimaryKey]
         public string ID { get; set; }
         public string Name { get; set; }
-
+   
         [ForeignKey(ColumnName = "KMentor")]
-        public Mentor Mentor { get; set; }
-      
+        private LazyLoadingObject<Mentor> LazyMentor { get; set; } = new LazyLoadingObject<Mentor>(Program.connectionString);
+
+        [Ignore]
+        public Mentor Mentor { get { return LazyMentor.Value; } set { LazyMentor.Value = value; } }
+
+        [ForeignKey(ColumnName ="KDepartment")]
+        public LazyLoadingList<JuniorDeveloper> JDevs { get; set; }
+        
+
     }
 }

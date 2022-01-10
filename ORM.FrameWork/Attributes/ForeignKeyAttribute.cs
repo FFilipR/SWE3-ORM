@@ -8,6 +8,8 @@ namespace ORM_FrameWork.Attributes
 {
     public class ForeignKeyAttribute : FieldAttribute 
     {
+        public string RemoteColumnName = null;
+        public string AssigmentTable = null;
 
     }
 }

@@ -3,12 +3,13 @@ select * from JuniorDevelopers;
 select * from Mentors;
 select * from skills;
 select * from departments;
+select * from jDevs_skills;
 
 
 
 drop table jDevs_skills;
-drop table Departments;
 drop table JuniorDevelopers;
+drop table Departments;
 drop table Skills;
 drop table Mentors;
 
@@ -31,6 +32,13 @@ create table Skills (
 	foreign key (KMentor) references Mentors (ID)
 )
 
+create table Departments (
+	ID varchar(50) primary key,
+	Name varchar(50),
+	KMentor varchar(50),
+	foreign key (KMentor) references Mentors (ID)
+)
+
 create table JuniorDevelopers (
 	ID varchar(50) primary key,
 	FirstName varchar(50),
@@ -40,16 +48,10 @@ create table JuniorDevelopers (
 	Salary varchar(50),
 	HDate timestamptz,
 	KSkill varchar(50),
-	foreign key (KSkill) references Skills (ID)
+	KDepartment varchar(50),
+	foreign key (KSkill) references Skills (ID),
+	foreign key (KDepartment) references Departments (ID)
 )
-
-create table Departments (
-	ID varchar(50) primary key,
-	Name varchar(50),
-	KMentor varchar(50),
-	foreign key (KMentor) references Mentors (ID)
-)
-
 
 create table jDevs_skills(
 	KjDev varchar(50),
@@ -68,3 +70,6 @@ SELECT ID, Name, KMentor FROM Departments WHERE KMentor = 'm1'
 
 
 
+INSERT INTO JuniorDevelopers (Salary, HDate, KDepartment, ID, FirstName, LastName, BDate, Sex) VALUES ('2000', '28-Feb-22 12:00:00 AM', null , 'jd3', 'Filip', 'Filipovic', '6-July-98 12:00:00 AM', '0') ON CONFLICT (ID) DO UPDATE SET Salary = '2000', HDate = '28-Feb-22 12:00:00 AM', KDepartment = null, FirstName = 'Filip', LastName = 'Filipovic', BDate = '6-July-98 12:00:00 AM', Sex = '0'
+
+SELECT Salary, HDate, KDepartment, ID, FirstName, LastName, BDate, Sex FROM JuniorDevelopers WHERE ID IN (SELECT KjDev FROM jDevs_skills WHERE KSkill = 's1')

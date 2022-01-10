@@ -11,7 +11,7 @@ using ORM_SampleApp;
 
 namespace ORM.SampleApp
 {
-    public static class DbOperations 
+    public static class Operations 
     {
    
         public static void InsertMentor()
@@ -90,13 +90,13 @@ namespace ORM.SampleApp
         public static void GetAllMentorsDepartments()
         {
             Console.WriteLine("\n->Get Mentor with all departments he mentors.");
-            string departments = string.Empty;
 
             Mentor m4 = ORMapper.GetByID<Mentor>("m1", Program.connectionString);
 
+            string departments = string.Empty;
             foreach (Department dep in m4.Departments)
             {
-                departments += $"{dep.Name} ";
+                departments += $"{dep.Name}; ";
             }
 
             Console.WriteLine($"Mentor {m4.FirstName} {m4.LastName} is mentoring in following Departments: {departments}");
@@ -119,19 +119,19 @@ namespace ORM.SampleApp
             jDev1.FirstName = "Eva";
             jDev1.LastName = "Atkinson";
             jDev1.BirthDate = new DateTime(1998, 3, 12);
-            jDev1.HireDate = new DateTime(2021, 2, 28);
+            jDev1.HireDate = new DateTime(2021, 2, 25);
             jDev1.Sex = (int)Person.Gender.FEMALE;
-            jDev1.Salary = 2000;
+            jDev1.Salary = 2100;   
             ORMapper.SaveToDb(jDev1, Program.connectionString);
 
             JuniorDeveloper jDev2 = new JuniorDeveloper();
             jDev2.ID = "jd2";
-            jDev2.FirstName = "Jeniffer";
+            jDev2.FirstName = "Joe";
             jDev2.LastName = "Rhodes";
             jDev2.BirthDate = new DateTime(1999, 6, 12);
-            jDev2.HireDate = new DateTime(2021, 2, 28);
-            jDev2.Sex = (int)Person.Gender.FEMALE;
-            jDev2.Salary = 2000;
+            jDev2.HireDate = new DateTime(2021, 2, 25);
+            jDev2.Sex = (int)Person.Gender.MALE;
+            jDev2.Salary = 2100;
             ORMapper.SaveToDb(jDev2, Program.connectionString);
 
             skill.JDevs.Add(jDev1);
@@ -150,6 +150,28 @@ namespace ORM.SampleApp
             Console.WriteLine($"Junior Developers that are attending  {skill.Name} are: {devs}");
             Console.WriteLine("_______________________________________________________________________");
 
+        }
+
+        public static void LazyList()
+        {
+            Console.WriteLine("\n->Lazy Loading for Junior Developer list.");
+
+            Department dep = ORMapper.GetByID<Department>("d1", Program.connectionString);
+            dep.JDevs.Add(ORMapper.GetByID<JuniorDeveloper>("jd1", Program.connectionString));
+            dep.JDevs.Add(ORMapper.GetByID<JuniorDeveloper>("jd2", Program.connectionString));
+
+            ORMapper.SaveToDb(dep, Program.connectionString);
+
+            dep = ORMapper.GetByID<Department>("d1", Program.connectionString);
+
+            string jdevs = string.Empty;
+            foreach (JuniorDeveloper jd in dep.JDevs)
+            {
+                jdevs += $"{jd.FirstName} {jd.LastName}; ";
+            }
+
+            Console.WriteLine($"Junior developers in department {jdevs}");
+            Console.WriteLine("_______________________________________________________________________");
 
         }
 
