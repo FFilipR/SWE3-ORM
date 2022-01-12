@@ -19,7 +19,7 @@ namespace ORM.SampleApp.Firma
         public List<Department> Departments { get; private set; }
 
         [ForeignKey(ColumnName = "KMentor")]
-        public List<Skill> skills { get; private set; }
+        public List<Skill> skills { get; private set; } = new List<Skill>();
 
     }
 }

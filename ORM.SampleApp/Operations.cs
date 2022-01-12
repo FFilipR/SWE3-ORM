@@ -66,6 +66,9 @@ namespace ORM.SampleApp
             dep.Name = "DevOps";
             dep.Mentor = m3;
 
+
+        
+
             ORMapper.SaveToDb(dep, Program.connectionString);
 
             Department dep2 = new Department();
@@ -81,7 +84,9 @@ namespace ORM.SampleApp
             dep3.Mentor = m3;
             ORMapper.SaveToDb(dep3, Program.connectionString);
 
+
             dep = ORMapper.GetByID<Department>("d1", Program.connectionString);
+
             Console.WriteLine($"{dep.Name} Mentor: {dep.Mentor.FirstName} {dep.Mentor.LastName}");
             Console.WriteLine("_______________________________________________________________________");
 
@@ -95,9 +100,14 @@ namespace ORM.SampleApp
             Mentor m4 = ORMapper.GetByID<Mentor>("m1", Program.connectionString);
 
             string departments = string.Empty;
-            foreach (Department dep in m4.Departments)
+
+            if (m4.Departments != null)
             {
-                departments += $"{dep.Name}; ";
+                foreach (Department dep in m4.Departments)
+                {
+                    departments += $"{dep.Name}; ";
+                }
+
             }
 
             Console.WriteLine($"Mentor {m4.FirstName} {m4.LastName} is mentoring in following Departments: {departments}");
@@ -188,7 +198,7 @@ namespace ORM.SampleApp
             }
 
             Console.WriteLine("\nWith Cache:");
-            ORMapper.Cache = new CacheImpl();
+            ORMapper.Cache = new Cache();
             for (int f = 0; f < 5; f++)
             {
                 Mentor m1 = ORMapper.GetByID<Mentor>("m1", Program.connectionString);

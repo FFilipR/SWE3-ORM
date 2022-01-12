@@ -17,7 +17,7 @@ namespace ORM_FrameWork.MetaModels
             this.Entity = entity;
         }
         public Entity Entity { get; internal set; } // entity who it belongs 
-        public static NpgsqlConnection DbConnection { get; set; }
+        public static NpgsqlConnection DbConnection { get; set; } = new NpgsqlConnection();
         public MemberInfo Member { get; internal set; }
 
         public Type Type // in Object
@@ -152,96 +152,107 @@ namespace ORM_FrameWork.MetaModels
 
         public void UpdateRelations(object obj, string connectionString)
         {
+          
 
-            Field.DbConnection = new NpgsqlConnection(connectionString);
-            Field.DbConnection.Open();
+            var connection = new NpgsqlConnection(connectionString);
+            var command = new NpgsqlCommand();
 
-            if (!IsExternal)
-                return;
+            command.Connection = connection;
+            connection.Open();
 
-            Entity innerEntity = ORMapper.GetEntity(Type.GenericTypeArguments[0]); // example: if table skill, innerEntity is the jDev of the skill
-            object pKey = Entity.PKey.ToColumnType(Entity.PKey.GetValue(obj));
+                if (!IsExternal)
+                    return;
 
-            if (IsMtoM)
-            {
-                NpgsqlCommand command = Field.DbConnection.CreateCommand();
-                command.CommandText = $"DELETE FROM {AssigmentTable} WHERE {ColumnName} = @pKey";
+                Entity innerEntity = ORMapper.GetEntity(Type.GenericTypeArguments[0]); // example: if table skill, innerEntity is the jDev of the skill
+                object pKey = Entity.PKey.ToColumnType(Entity.PKey.GetValue(obj));
 
-                NpgsqlParameter parameter = command.CreateParameter();
-                parameter.ParameterName = "@pKey";
-                parameter.Value = pKey;
-                command.Parameters.Add(parameter);
-
-                command.ExecuteNonQuery();
-                command.Dispose();
-
-                if(GetValue(obj) != null)
+                if (IsMtoM)
                 {
-                  
-                    foreach (object o in(IEnumerable)GetValue(obj)) // example: jDevs in Skills table
+                    command = connection.CreateCommand();
+                    command.CommandText = $"DELETE FROM {AssigmentTable} WHERE {ColumnName} = @pKey";
+
+                    NpgsqlParameter parameter = command.CreateParameter();
+                    parameter.ParameterName = "@pKey";
+                    parameter.Value = pKey;
+                    command.Parameters.Add(parameter);
+
+                    command.ExecuteNonQuery();
+                    command.Dispose();
+
+                    if (GetValue(obj) != null)
                     {
 
-                        command = Field.DbConnection.CreateCommand();
+                        foreach (object o in (IEnumerable)GetValue(obj)) // example: jDevs in Skills table
+                        {
+
+                        command = connection.CreateCommand();
                         command.CommandText = $"INSERT INTO {AssigmentTable} ({ColumnName}, {RemoteColumnName}) VALUES (@pKey, @fKey)";
-                        
-                        parameter = command.CreateParameter();
-                        parameter.ParameterName = "@pKey";
-                        parameter.Value = pKey;
-                        command.Parameters.Add(parameter);
 
-                        parameter = command.CreateParameter();
-                        parameter.ParameterName = "@fKey";
-                        parameter.Value = innerEntity.PKey.ToColumnType(innerEntity.PKey.GetValue(o));
-                        command.Parameters.Add(parameter);
+                            parameter = command.CreateParameter();
+                            parameter.ParameterName = "@pKey";
+                            parameter.Value = pKey;
+                            command.Parameters.Add(parameter);
 
-                        command.ExecuteNonQuery();
-                        command.Dispose();
+                            parameter = command.CreateParameter();
+                            parameter.ParameterName = "@fKey";
+                            parameter.Value = innerEntity.PKey.ToColumnType(innerEntity.PKey.GetValue(o));
+                            command.Parameters.Add(parameter);
+
+                            command.ExecuteNonQuery();
+                            command.Dispose();
+                        }
                     }
-                }          
-            }
-            else
-            {
-                Field field = innerEntity.GetFieldForColumn(ColumnName);
+                }
+                else
+                {
+                    Field field = innerEntity.GetFieldForColumn(ColumnName);
 
-                if (field.IsNullable)
-                {                
-                        NpgsqlCommand command = Field.DbConnection.CreateCommand();
-                        command.CommandText = $"UPDATE {innerEntity.TableName} SET {ColumnName} = NULL WHERE {ColumnName} = @pKey";
-                        
+                    if (field.IsNullable)
+                    {
+                    command = connection.CreateCommand();
+
+                    command.CommandText = $"UPDATE {innerEntity.TableName} SET {ColumnName} = NULL WHERE {ColumnName} = @pKey";
+
                         NpgsqlParameter parameter = command.CreateParameter();
                         parameter.ParameterName = "@pKey";
                         parameter.Value = pKey;
                         command.Parameters.Add(parameter);
 
                         command.ExecuteNonQuery();
-                        command.Dispose();                   
-                }
-                else if (GetValue(obj) != null)
-                {
-                    foreach (object o in (IEnumerable)GetValue(obj))
-                    {
-                        field.SetValue(o, obj);
+                        command.Dispose();
 
-                        NpgsqlCommand command = Field.DbConnection.CreateCommand();
+
+                    }
+                    else if (GetValue(obj) != null)
+                    {
+                        foreach (object o in (IEnumerable)GetValue(obj))
+                        {
+                            field.SetValue(o, obj);
+
+                        command = connection.CreateCommand();
+
                         command.CommandText = $"UPDATE {innerEntity.TableName} SET {ColumnName} = @fKey WHERE {innerEntity.PKey.ColumnName} = @pKey";
 
-                        NpgsqlParameter parameter = command.CreateParameter();
-                        parameter.ParameterName = "@fKey";
-                        parameter.Value = pKey; // fKey is now our pKey
-                        command.Parameters.Add(parameter);
+                            NpgsqlParameter parameter = command.CreateParameter();
+                            parameter.ParameterName = "@fKey";
+                            parameter.Value = pKey; // fKey is now our pKey
+                            command.Parameters.Add(parameter);
 
-                        parameter = command.CreateParameter();
-                        parameter.ParameterName = "@fKey";
-                        parameter.Value = innerEntity.PKey.ToColumnType(innerEntity.PKey.GetValue(o));
-                        command.Parameters.Add(parameter);
+                            parameter = command.CreateParameter();
+                            parameter.ParameterName = "@fKey";
+                            parameter.Value = innerEntity.PKey.ToColumnType(innerEntity.PKey.GetValue(o));
+                            command.Parameters.Add(parameter);
 
-                        command.ExecuteNonQuery();
-                        command.Dispose();
+                            command.ExecuteNonQuery();
+                            command.Dispose();
+
+                        }
                     }
-                }
-            }
 
-            Field.DbConnection.Close();
+
+                connection.Close();
+
+            }
         }
     } 
 }

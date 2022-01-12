@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace ORM.FrameWork.Cache
 {
-    public class CacheImpl : ICache
+    public class Cache : ICache
     {
-  
+
         protected Dictionary<Type, Dictionary<object, object>> Caches = new Dictionary<Type, Dictionary<object, object>>();
 
         protected virtual Dictionary<object, object> GetCache(Type type)
         {
-            if (Caches.ContainsKey(type)) 
-                return Caches[type]; 
+            if (Caches.ContainsKey(type))
+                return Caches[type];
 
             Dictionary<object, object> objDict = new Dictionary<object, object>();
             Caches.Add(type, objDict);
@@ -26,7 +26,7 @@ namespace ORM.FrameWork.Cache
         {
             Dictionary<object, object> objDict = GetCache(type);
 
-            if (objDict.ContainsKey(pKey)) 
+            if (objDict.ContainsKey(pKey))
                 return objDict[pKey];
 
             return null;
@@ -50,11 +50,11 @@ namespace ORM.FrameWork.Cache
             var type = obj.GetType();
             var entity = ORMapper.GetEntity(obj);
 
-            if (obj != null) 
-                GetCache(type)[entity.PKey.GetValue(obj)] = obj; 
+            if (obj != null)
+                GetCache(type)[entity.PKey.GetValue(obj)] = obj;
         }
 
-        
+
         public virtual bool HasChanged(object obj)
         {
             return true;
@@ -67,6 +67,7 @@ namespace ORM.FrameWork.Cache
 
             return GetCache(type).ContainsKey(entity.PKey.GetValue(obj));
         }
+
 
     }
 }

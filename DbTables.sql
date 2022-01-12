@@ -73,3 +73,10 @@ SELECT ID, Name, KMentor FROM Departments WHERE KMentor = 'm1'
 INSERT INTO JuniorDevelopers (Salary, HDate, KDepartment, ID, FirstName, LastName, BDate, Sex) VALUES ('2000', '28-Feb-22 12:00:00 AM', null , 'jd3', 'Filip', 'Filipovic', '6-July-98 12:00:00 AM', '0') ON CONFLICT (ID) DO UPDATE SET Salary = '2000', HDate = '28-Feb-22 12:00:00 AM', KDepartment = null, FirstName = 'Filip', LastName = 'Filipovic', BDate = '6-July-98 12:00:00 AM', Sex = '0'
 
 SELECT Salary, HDate, KDepartment, ID, FirstName, LastName, BDate, Sex FROM JuniorDevelopers WHERE ID IN (SELECT KjDev FROM jDevs_skills WHERE KSkill = 's1')
+
+
+show max_connections;
+SELECT * FROM pg_stat_activity;
+SELECT COUNT(*) from pg_stat_activity;
+select min_val, max_val from pg_settings where name='max_connections';
+alter system set max_connections = 200;

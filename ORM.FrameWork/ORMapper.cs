@@ -16,7 +16,6 @@ namespace ORM_FrameWork
         private static Dictionary<Type, Entity> Entities = new Dictionary<Type, Entity>();
         public static NpgsqlConnection DbConnection { get; set; }
 
-        public static NpgsqlCommand tempCommand = new NpgsqlCommand();
         public static ICache Cache { get; set; } 
         internal static Entity GetEntity(object obj) 
         {
@@ -31,59 +30,74 @@ namespace ORM_FrameWork
 
         public static void SaveToDb(object obj, string connectionString)
         {
+            if (Cache != null)
+            { 
+                if (!Cache.HasChanged(obj)) 
+                    return; 
+            }
+
             Entity entity = GetEntity(obj);
-                   
-            NpgsqlCommand command = new NpgsqlCommand();
-            command.Connection = DbConnection;
 
-            command.CommandText = $"INSERT INTO {entity.TableName} (";
+            DbConnection = new NpgsqlConnection(connectionString);
+           // DbConnection.ConnectionString = connectionString;
+            var command = new NpgsqlCommand();
+            
+                 command.Connection = DbConnection;
 
-            string conflict = $"ON CONFLICT ({entity.PKey.ColumnName }) DO UPDATE SET ";
-            string insert = string.Empty;
+           DbConnection.Open();
+                command = DbConnection.CreateCommand();
 
-            bool fr = true;
+                command.CommandText = $"INSERT INTO {entity.TableName} (";
 
-            for (int f = 0; f < entity.IntFields.Length; f++)
-            {
-              
-                if (f > 0) 
-                { 
-                    command.CommandText += ", "; 
-                    insert += ", "; 
-                }
-                command.CommandText += entity.IntFields[f].ColumnName;             
-               
-                insert += $"@insert{f}";
+                string conflict = $"ON CONFLICT ({entity.PKey.ColumnName }) DO UPDATE SET ";
+                string insert = string.Empty;
 
-                NpgsqlParameter parameter = command.CreateParameter();
-                parameter.ParameterName = $"@insert{f}";
-                parameter.Value = entity.IntFields[f].ToColumnType(entity.IntFields[f].GetValue(obj));
-                if (parameter.Value == null)
-                    parameter.Value = DBNull.Value;
-                command.Parameters.Add(parameter);
+                bool fr = true;
 
-                if (!entity.IntFields[f].IsPkey)
+                for (int f = 0; f < entity.IntFields.Length; f++)
                 {
 
-                    if (fr)
-                        fr = false;
-                    else
-                        conflict += ", ";
+                    if (f > 0)
+                    {
+                        command.CommandText += ", ";
+                        insert += ", ";
+                    }
+                    command.CommandText += entity.IntFields[f].ColumnName;
 
-                    conflict += $"{entity.IntFields[f].ColumnName} = @conflict{f}";
+                    insert += $"@insert{f}";
 
-                    parameter = command.CreateParameter();
-                    parameter.ParameterName = ("@conflict" + f.ToString());
+                    NpgsqlParameter parameter = command.CreateParameter();
+                    parameter.ParameterName = $"@insert{f}";
                     parameter.Value = entity.IntFields[f].ToColumnType(entity.IntFields[f].GetValue(obj));
                     if (parameter.Value == null)
                         parameter.Value = DBNull.Value;
                     command.Parameters.Add(parameter);
-                }
-            }
-            command.CommandText += $") VALUES ({insert}) {conflict}";
 
-            command.ExecuteNonQuery();
-            command.Dispose();
+                    if (!entity.IntFields[f].IsPkey)
+                    {
+
+                        if (fr)
+                            fr = false;
+                        else
+                            conflict += ", ";
+
+                        conflict += $"{entity.IntFields[f].ColumnName} = @conflict{f}";
+
+                        parameter = command.CreateParameter();
+                        parameter.ParameterName = ("@conflict" + f.ToString());
+                        parameter.Value = entity.IntFields[f].ToColumnType(entity.IntFields[f].GetValue(obj));
+                        if (parameter.Value == null)
+                            parameter.Value = DBNull.Value;
+                        command.Parameters.Add(parameter);
+                    }
+                }
+                command.CommandText += $") VALUES ({insert}) {conflict}";
+
+                command.ExecuteNonQuery();
+                command.Dispose();
+            DbConnection.Close();
+
+            
 
             foreach (Field f in entity.ExtFields)
                 f.UpdateRelations(obj, connectionString);
@@ -96,9 +110,13 @@ namespace ORM_FrameWork
         public static void DeleteFromDb(object obj, string connectionString)
         {
             Entity entity = GetEntity(obj);
-            NpgsqlCommand command = new NpgsqlCommand();
-            command.Connection = new NpgsqlConnection(connectionString);
-            command.Connection.Open();
+            DbConnection = new NpgsqlConnection(connectionString);
+           // DbConnection.ConnectionString = connectionString;
+
+            var command = new NpgsqlCommand();
+            command.Connection = DbConnection;
+            DbConnection.Open();
+            command = DbConnection.CreateCommand();
 
             command.CommandText = $"DELETE FROM {entity.TableName} WHERE {entity.PKey.ColumnName} = @pKey";
 
@@ -107,8 +125,8 @@ namespace ORM_FrameWork
             parameter.Value = entity.PKey.GetValue(obj);
             command.Parameters.Add(parameter);
 
-            command.Connection.Close();
             command.Dispose();
+            DbConnection.Close();
         }
 
         internal static object Create(Type type, NpgsqlDataReader reader, ICollection<object> cache, string connectionString)
@@ -123,9 +141,7 @@ namespace ORM_FrameWork
                 if (cache == null)
                     cache = new List<object>();
 
-                cache.Add(obj = Activator.CreateInstance(type));
-
-                
+                cache.Add(obj = Activator.CreateInstance(type));            
             }
 
             foreach(Field f in entity.IntFields)
@@ -156,6 +172,7 @@ namespace ORM_FrameWork
         }
 
         internal static object Create(Type type, object pKey, ICollection<object> cache, string connectionString)
+
         {
 
             object obj = CacheSearch(type, pKey, cache);
@@ -164,13 +181,15 @@ namespace ORM_FrameWork
             //var count = ((cache != null) ? cache.Count : 0);
             if (obj == null)
             {
-                NpgsqlCommand command = new NpgsqlCommand();
-                command.Connection = new NpgsqlConnection(connectionString);
-                command.Connection.Open();
+                DbConnection = new NpgsqlConnection(connectionString);
+                //DbConnection.ConnectionString = connectionString;
+                var command = new NpgsqlCommand();
+                command.Connection = DbConnection;
 
-                // command.CommandText = $"{GetEntity(type).GetSql()} WHERE {GetEntity(type).PKey.ColumnName} = @pKey";
-                
+                DbConnection.Open();
                 Entity entity = GetEntity(type);
+                command = DbConnection.CreateCommand();
+
                 command.CommandText = entity.GetSql() + (string.IsNullOrWhiteSpace(entity.SubsetQuery) ? " WHERE " : " AND ") + GetEntity(type).PKey.ColumnName + " = @pKey";
 
 
@@ -186,50 +205,28 @@ namespace ORM_FrameWork
                         obj = Create(type, dataReader, cache, connectionString);
                     }
                 }
-                command.Connection.Close();
+
+                //var dataReader = command.ExecuteReader();
+
+                //    while (dataReader.Read())
+                //    {
+                //        obj = Create(type, dataReader, cache, connectionString);
+                //    }
+
+
+                //dataReader.Close();
+                //dataReader.Dispose();
                 command.Dispose();
-             }
+                DbConnection.Close();
 
-            //if (obj.Equals(null))
-            //    throw new DataException("No data has been found.");
+            }
 
-            //return obj;
-
-
-
-            //object obj = null;
-            //var locc = ((cache != null) ? cache.Count : 0);
-
-            //NpgsqlCommand command = new NpgsqlCommand();
-            //command.Connection = new NpgsqlConnection(connectionString);
-            //command.Connection.Open();
-
-            //Entity entity = GetEntity(type);
-            //command.CommandText = entity.GetSql() + (string.IsNullOrWhiteSpace(entity.SubsetQuery) ? " WHERE " : " AND ") + GetEntity(type).PKey.ColumnName + " = @pKey";
-
-            //NpgsqlParameter parameter = command.CreateParameter();
-            //parameter.ParameterName = "@pKey";
-            //parameter.Value = pKey;
-            //command.Parameters.Add(parameter);
-
-            //using (var dataReader = command.ExecuteReader()) // while using is active, data reader is open. It isn't required to reader.dispose and reader.dispose
-            //{
-            //    if (dataReader.Read())
-            //    {
-            //        obj = Create(type, dataReader, cache, connectionString);
-            //    }
-            //}
-
-            //command.Connection.Close();
-            //command.Dispose();
-
-
-            //if (Cache != null)
+            //if (cache != null)
             //    if ((cache != null) && (cache.Count > count))
             //        Cache.Put(obj);
 
-
             return obj;
+
         }
 
         public static T GetByID<T>(object pKey, string connectionString)
@@ -261,10 +258,15 @@ namespace ORM_FrameWork
      
         internal static void ListFiller (Type type, object listObj, string sql, IEnumerable<Tuple<string, object>> sqlParameters, string connectionString, ICollection<object> cache = null)
         {
-            NpgsqlCommand command = new NpgsqlCommand();
-            command.Connection = new NpgsqlConnection(connectionString);
-            command.Connection.Open();
+            DbConnection = new NpgsqlConnection(connectionString);
+            //DbConnection.ConnectionString = connectionString;
 
+            var command = new NpgsqlCommand();
+            
+           command.Connection = DbConnection;
+            DbConnection.Open();
+
+            command = DbConnection.CreateCommand();
             command.CommandText = sql;
 
             foreach (Tuple<string,object> so in sqlParameters) // fkey: string = parameter.name , object = parameter value
@@ -272,6 +274,8 @@ namespace ORM_FrameWork
                 NpgsqlParameter parameter = command.CreateParameter();
                 parameter.ParameterName = so.Item1;
                 parameter.Value = so.Item2;
+                if (parameter.Value == null)
+                    parameter.Value = DBNull.Value;
                 command.Parameters.Add(parameter);
             }
 
@@ -285,9 +289,26 @@ namespace ORM_FrameWork
                     });
                 }
             }
-    
-            command.Connection.Close();
+
+
+            //var dataReader = command.ExecuteReader();
+
+            //while (dataReader.Read())
+            //{
+            //    listObj.GetType().GetMethod("Add").Invoke(listObj, new object[]
+            //   {
+            //    Create(type, dataReader, cache, connectionString)
+            //  });
+            //}
+
+
+            //dataReader.Close();
+            //dataReader.Dispose();
             command.Dispose();
+            DbConnection.Close();
+
+
+            
         }
     }
 }
