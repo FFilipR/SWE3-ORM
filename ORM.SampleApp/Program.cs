@@ -21,7 +21,7 @@ namespace ORM_SampleApp
             ORMapper.DbConnection = new NpgsqlConnection(connectionString);
             ORMapper.DbConnection.Open();
 
-            ORMapper.Cache = new CacheTracking();
+            //ORMapper.Cache = new CacheTracking();
 
             Operations.InsertMentor();
             Operations.UpdateMentorSalary();
@@ -30,6 +30,7 @@ namespace ORM_SampleApp
             Operations.MtoNRelation();
             Operations.LazyList();
             Operations.CacheDemo();
+            Operations.QueryDemo();
 
             ORMapper.DbConnection.Close();
 

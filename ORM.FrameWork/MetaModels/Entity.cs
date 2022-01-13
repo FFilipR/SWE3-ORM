@@ -18,7 +18,10 @@ namespace ORM_FrameWork.MetaModels
         public Field[] ExtFields { get; private set; }
         public Field[] IntFields { get; private set; }
         public Field[] Fields { get; private set; }
-
+        public bool IsMaterial
+        {
+            get; private set;
+        }
         public string SubsetQuery
         {
             get; private set;

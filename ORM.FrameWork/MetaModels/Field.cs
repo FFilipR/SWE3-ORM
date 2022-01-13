@@ -99,11 +99,11 @@ namespace ORM_FrameWork.MetaModels
             if (val is bool)
             {
                 if (ColumnType == typeof(int))
-                    return ((bool) val) ? 1 : 0; // if cast true ist, return 1 else 0
+                    return ((bool) val) ? true : false; 
                 if (ColumnType == typeof(short))
-                    return ((bool) val) ? 1 : 0;
+                    return ((bool) val) ? true : false;
                 if (ColumnType == typeof(long))
-                    return ((bool) val) ? 1 : 0;
+                    return ((bool) val) ? true : false;
             }
 
             return val;

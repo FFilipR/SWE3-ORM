@@ -209,5 +209,28 @@ namespace ORM.SampleApp
 
         }
 
+        public static void QueryDemo()
+        {
+            Console.WriteLine("\n->Demonstaration of Query.");
+
+            string jDevs = string.Empty;
+            foreach (JuniorDeveloper jDev in ORMapper.From<JuniorDeveloper>(Program.connectionString).Greater("Salary",2200))
+            {
+               jDevs += $"{jDev.FirstName} {jDev.LastName}; ";
+
+            }
+            Console.WriteLine($"\nJunior Devlopers with salary > 2200e: {jDevs}");
+
+            jDevs = string.Empty;
+            foreach (JuniorDeveloper jDev in ORMapper.From<JuniorDeveloper>(Program.connectionString).Less("Salary", 2300).Or().Like("LastName", "rh%", true))
+            {
+               jDevs += $"{jDev.FirstName} {jDev.LastName}; ";
+            }
+            Console.WriteLine($"\nJunior Devlopers with salary < 2300e or lastname name start with 'rh': {jDevs}");
+
+     
+            Console.WriteLine("_______________________________________________________________________");
+        }
+
     }
 }

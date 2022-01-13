@@ -1,6 +1,7 @@
 ﻿using Npgsql;
 using ORM.FrameWork.Cache;
 using ORM.FrameWork.Loading;
+using ORM.FrameWork.Query;
 using ORM_FrameWork.MetaModels;
 using System;
 using System.Collections.Generic;
@@ -165,8 +166,8 @@ namespace ORM_FrameWork
                 }
             }
 
-            if (Cache != null)
-                Cache.Put(obj);
+            //if (Cache != null)
+            //    Cache.Put(obj);
 
             return obj;
         }
@@ -206,16 +207,6 @@ namespace ORM_FrameWork
                     }
                 }
 
-                //var dataReader = command.ExecuteReader();
-
-                //    while (dataReader.Read())
-                //    {
-                //        obj = Create(type, dataReader, cache, connectionString);
-                //    }
-
-
-                //dataReader.Close();
-                //dataReader.Dispose();
                 command.Dispose();
                 DbConnection.Close();
 
@@ -233,6 +224,11 @@ namespace ORM_FrameWork
         {
             return (T) Create(typeof(T), pKey, null, connectionString);
         }
+
+        public static Query<T> From<T>(string connectionString)
+        {
+            return new Query<T>(null, connectionString);
+        }    
 
 
         internal static object CacheSearch(Type type, object pKey, ICollection<object> cache)
@@ -263,7 +259,7 @@ namespace ORM_FrameWork
 
             var command = new NpgsqlCommand();
             
-           command.Connection = DbConnection;
+            command.Connection = DbConnection;
             DbConnection.Open();
 
             command = DbConnection.CreateCommand();
@@ -289,26 +285,23 @@ namespace ORM_FrameWork
                     });
                 }
             }
-
-
-            //var dataReader = command.ExecuteReader();
-
-            //while (dataReader.Read())
-            //{
-            //    listObj.GetType().GetMethod("Add").Invoke(listObj, new object[]
-            //   {
-            //    Create(type, dataReader, cache, connectionString)
-            //  });
-            //}
-
-
-            //dataReader.Close();
-            //dataReader.Dispose();
+        
             command.Dispose();
             DbConnection.Close();
 
 
             
+        }
+        internal static Type[] GetTypeOfChild (Type type)
+        {
+            List<Type> typeList = new List<Type>();
+            foreach(Type t in Entities.Keys)
+            {
+                if (type.IsAssignableFrom(t) && (!t.IsAbstract))
+                    typeList.Add(t);
+
+            }
+                return typeList.ToArray();
         }
     }
 }
