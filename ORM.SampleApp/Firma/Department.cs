@@ -14,14 +14,14 @@ namespace ORM.SampleApp.Firma
     {
         public Department()
         {
-            JDevs = new LazyLoadingList<JuniorDeveloper>(this, "JDevs", Program.connectionString);
+            JDevs = new LazyLoadingList<JuniorDeveloper>(this, "JDevs", Program.ConnectionString);
         }
         [PrimaryKey]
         public string ID { get; set; }
         public string Name { get; set; }
    
         [ForeignKey(ColumnName = "KMentor")]
-        private LazyLoadingObject<Mentor> LazyMentor { get; set; } = new LazyLoadingObject<Mentor>(Program.connectionString);
+        private LazyLoadingObject<Mentor> LazyMentor { get; set; } = new LazyLoadingObject<Mentor>(Program.ConnectionString);
 
         [Ignore]
         public Mentor Mentor { get { return LazyMentor.Value; } set { LazyMentor.Value = value; } }

@@ -12,10 +12,14 @@ drop table JuniorDevelopers;
 drop table Departments;
 drop table Skills;
 drop table Mentors;
+drop table locking;
+drop INDEX Uq_Locking;
 
-TRUNCATE TABLE Mentors;
+CREATE TABLE Locking (LClass varchar(50) NOT NULL, LObject varchar(50) NOT NULL, LTime timestamptz NOT NULL, LOwner varchar(50))
+CREATE UNIQUE INDEX UX_Locking ON Locking (LClass, LObject)
 
-create table Mentors(
+
+create table if not exists Mentors(
 	ID varchar(50) primary key,
 	FirstName varchar(50),
 	LastName varchar(50),
@@ -45,7 +49,7 @@ create table JuniorDevelopers (
 	LastName varchar(50),
 	BDate timestamptz,
 	Sex int,
-	Salary varchar(50),
+	Salary int,
 	HDate timestamptz,
 	KSkill varchar(50),
 	KDepartment varchar(50),
@@ -80,3 +84,10 @@ SELECT * FROM pg_stat_activity;
 SELECT COUNT(*) from pg_stat_activity;
 select min_val, max_val from pg_settings where name='max_connections';
 alter system set max_connections = 200;
+
+
+
+
+SELECT Salary, HDate, KDepartment, ID, FirstName, LastName, BDate, Sex FROM JuniorDevelopers WHERE (Salary > '2200')
+
+Create Table 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using ORM.FrameWork.Cache;
+using ORM.FrameWork.Locking;
 using ORM.SampleApp.Firma;
 using ORM_FrameWork;
 using ORM_SampleApp;
@@ -15,10 +16,24 @@ namespace ORM.SampleApp
     public static class Operations 
     {
    
-        public static void InsertMentor()
+        public static void CreateDB()
+        {
+            Console.WriteLine("->Createing DB tables.");
+
+            ORMapper.CreateDbTables(Program.ConnectionString);
+            Console.WriteLine("_______________________________________________________________________");
+        }
+        public static void ClearDB()
+        {
+            Console.WriteLine("->Droping DB tables.");
+
+            ORMapper.DropDbTables(Program.ConnectionString);
+            Console.WriteLine("_______________________________________________________________________");
+        }
+        public static void InsertObjDemo()
         {
 
-            Console.WriteLine("->Inserting Mentor into DB.");
+            Console.WriteLine("->Demonstration of inserting a object into DB.");
 
             Mentor m1 = new Mentor();
 
@@ -30,16 +45,16 @@ namespace ORM.SampleApp
             m1.Sex = (int)Person.Gender.MALE;
             m1.Salary = 4500;
 
-            ORMapper.SaveToDb(m1, Program.connectionString);
+            ORMapper.SaveToDb(m1, Program.ConnectionString);
             Console.WriteLine("_______________________________________________________________________");
 
         }
 
-        public static void UpdateMentorSalary()
+        public static void UpdateObjDemo()
         {
-            Console.WriteLine("\n->Getting Mentor from DB.");
+            Console.WriteLine("\n->Demonstration of update of a object from DB.");
 
-            Mentor m2 = ORMapper.GetByID<Mentor>("m1", Program.connectionString); // get Mentor with id m1
+            Mentor m2 = ORMapper.GetByID<Mentor>("m1", Program.ConnectionString); // get Mentor with id m1
 
             Console.WriteLine($"Salary for {m2.FirstName} {m2.LastName} is { m2.Salary} Dollars.");
 
@@ -47,19 +62,19 @@ namespace ORM.SampleApp
             m2.Salary += 250;
 
             Console.WriteLine($"Salary for {m2.FirstName} {m2.LastName} is { m2.Salary} Dollars.");
-            ORMapper.SaveToDb(m2, Program.connectionString);
+            ORMapper.SaveToDb(m2, Program.ConnectionString);
             Console.WriteLine("_______________________________________________________________________");
 
 
         }
 
         // Foreign Key 1:n 
-        public static void GetDepartmentsMentor()
+        public static void OneToNDemo()
         {
-            Console.WriteLine("\n->Getting Department with his Mentor.");
+            Console.WriteLine("\n->Demonstration of 1:N relation.");
 
 
-            Mentor m3 = ORMapper.GetByID<Mentor>("m1", Program.connectionString);
+            Mentor m3 = ORMapper.GetByID<Mentor>("m1", Program.ConnectionString);
 
             Department dep = new Department();
             dep.ID = "d1";
@@ -69,23 +84,23 @@ namespace ORM.SampleApp
 
         
 
-            ORMapper.SaveToDb(dep, Program.connectionString);
+            ORMapper.SaveToDb(dep, Program.ConnectionString);
 
             Department dep2 = new Department();
             dep2.ID = "d2";
             dep2.Name = "WebDev";
             dep2.Mentor = m3;
-            ORMapper.SaveToDb(dep2, Program.connectionString);
+            ORMapper.SaveToDb(dep2, Program.ConnectionString);
 
 
             Department dep3 = new Department();
             dep3.ID = "d3";
             dep3.Name = "SWE";
             dep3.Mentor = m3;
-            ORMapper.SaveToDb(dep3, Program.connectionString);
+            ORMapper.SaveToDb(dep3, Program.ConnectionString);
 
 
-            dep = ORMapper.GetByID<Department>("d1", Program.connectionString);
+            dep = ORMapper.GetByID<Department>("d1", Program.ConnectionString);
 
             Console.WriteLine($"{dep.Name} Mentor: {dep.Mentor.FirstName} {dep.Mentor.LastName}");
             Console.WriteLine("_______________________________________________________________________");
@@ -93,11 +108,11 @@ namespace ORM.SampleApp
 
         }
         // Foreign key n:1
-        public static void GetAllMentorsDepartments()
+        public static void NtoOneDemo()
         {
-            Console.WriteLine("\n->Get Mentor with all departments he mentors.");
+            Console.WriteLine("\n->Demonstration of N:1 relation.");
 
-            Mentor m4 = ORMapper.GetByID<Mentor>("m1", Program.connectionString);
+            Mentor m4 = ORMapper.GetByID<Mentor>("m1", Program.ConnectionString);
 
             string departments = string.Empty;
 
@@ -116,14 +131,14 @@ namespace ORM.SampleApp
         }
 
         // m:n
-        public static void MtoNRelation()
+        public static void MtoNDemo()
         {
-            Console.WriteLine("\n-> M to N Relation");
+            Console.WriteLine("\n-> Demonstration of M:N relation.");
 
             Skill skill = new Skill();
             skill.ID = "s1";
             skill.Name = "C#";
-            skill.Mentor = ORMapper.GetByID<Mentor>("m1", Program.connectionString);
+            skill.Mentor = ORMapper.GetByID<Mentor>("m1", Program.ConnectionString);
 
             JuniorDeveloper jDev1 = new JuniorDeveloper();
             jDev1.ID = "jd1";
@@ -133,7 +148,7 @@ namespace ORM.SampleApp
             jDev1.HireDate = new DateTime(2021, 2, 25);
             jDev1.Sex = (int)Person.Gender.FEMALE;
             jDev1.Salary = 2100;   
-            ORMapper.SaveToDb(jDev1, Program.connectionString);
+            ORMapper.SaveToDb(jDev1, Program.ConnectionString);
 
             JuniorDeveloper jDev2 = new JuniorDeveloper();
             jDev2.ID = "jd2";
@@ -143,13 +158,13 @@ namespace ORM.SampleApp
             jDev2.HireDate = new DateTime(2021, 2, 25);
             jDev2.Sex = (int)Person.Gender.MALE;
             jDev2.Salary = 2500;
-            ORMapper.SaveToDb(jDev2, Program.connectionString);
+            ORMapper.SaveToDb(jDev2, Program.ConnectionString);
 
             skill.JDevs.Add(jDev1);
             skill.JDevs.Add(jDev2);
-            ORMapper.SaveToDb(skill, Program.connectionString);
+            ORMapper.SaveToDb(skill, Program.ConnectionString);
 
-            skill = ORMapper.GetByID<Skill>("s1", Program.connectionString);
+            skill = ORMapper.GetByID<Skill>("s1", Program.ConnectionString);
 
 
             string devs = string.Empty;
@@ -163,17 +178,17 @@ namespace ORM.SampleApp
 
         }
 
-        public static void LazyList()
+        public static void LazyListDemo()
         {
-            Console.WriteLine("\n->Lazy Loading for Junior Developer list.");
+            Console.WriteLine("\n->Demonstration of LazyLoading.");
 
-            Department dep = ORMapper.GetByID<Department>("d1", Program.connectionString);
-            dep.JDevs.Add(ORMapper.GetByID<JuniorDeveloper>("jd1", Program.connectionString));
-            dep.JDevs.Add(ORMapper.GetByID<JuniorDeveloper>("jd2", Program.connectionString));
+            Department dep = ORMapper.GetByID<Department>("d1", Program.ConnectionString);
+            dep.JDevs.Add(ORMapper.GetByID<JuniorDeveloper>("jd1", Program.ConnectionString));
+            dep.JDevs.Add(ORMapper.GetByID<JuniorDeveloper>("jd2", Program.ConnectionString));
 
-            ORMapper.SaveToDb(dep, Program.connectionString);
+            ORMapper.SaveToDb(dep, Program.ConnectionString);
 
-            dep = ORMapper.GetByID<Department>("d1", Program.connectionString);
+            dep = ORMapper.GetByID<Department>("d1", Program.ConnectionString);
 
             string jdevs = string.Empty;
             foreach (JuniorDeveloper jd in dep.JDevs)
@@ -193,7 +208,7 @@ namespace ORM.SampleApp
             Console.WriteLine("\nNo Cache:");
             for (int f=0; f<5; f++)
             {
-                Mentor m1 = ORMapper.GetByID<Mentor>("m1", Program.connectionString);
+                Mentor m1 = ORMapper.GetByID<Mentor>("m1", Program.ConnectionString);
                 Console.WriteLine($"Mentor Object with ID: ({m1.ID}) -> instance number: {m1.NumberOfInstance}");
             }
 
@@ -201,12 +216,11 @@ namespace ORM.SampleApp
             ORMapper.Cache = new Cache();
             for (int f = 0; f < 5; f++)
             {
-                Mentor m1 = ORMapper.GetByID<Mentor>("m1", Program.connectionString);
+                Mentor m1 = ORMapper.GetByID<Mentor>("m1", Program.ConnectionString);
                 Console.WriteLine($"Mentor Object with ID: ({m1.ID}) -> instance number: {m1.NumberOfInstance}");
             }
 
             Console.WriteLine("_______________________________________________________________________");
-
         }
 
         public static void QueryDemo()
@@ -214,7 +228,7 @@ namespace ORM.SampleApp
             Console.WriteLine("\n->Demonstaration of Query.");
 
             string jDevs = string.Empty;
-            foreach (JuniorDeveloper jDev in ORMapper.From<JuniorDeveloper>(Program.connectionString).Greater("Salary",2200))
+            foreach (JuniorDeveloper jDev in ORMapper.GetQuery<JuniorDeveloper>(Program.ConnectionString).Greater("Salary",2200))
             {
                jDevs += $"{jDev.FirstName} {jDev.LastName}; ";
 
@@ -222,15 +236,40 @@ namespace ORM.SampleApp
             Console.WriteLine($"\nJunior Devlopers with salary > 2200e: {jDevs}");
 
             jDevs = string.Empty;
-            foreach (JuniorDeveloper jDev in ORMapper.From<JuniorDeveloper>(Program.connectionString).Less("Salary", 2300).Or().Like("LastName", "rh%", true))
+            foreach (JuniorDeveloper jDev in ORMapper.GetQuery<JuniorDeveloper>(Program.ConnectionString).Less("Salary", 2300).Or().Like("LastName", "rh%", true))
             {
                jDevs += $"{jDev.FirstName} {jDev.LastName}; ";
             }
-            Console.WriteLine($"\nJunior Devlopers with salary < 2300e or lastname name start with 'rh': {jDevs}");
-
-     
+            Console.WriteLine($"\nJunior Devlopers with salary < 2300e or lastname name start with 'rh': {jDevs}");    
             Console.WriteLine("_______________________________________________________________________");
         }
+
+        public static void LockingDemo()
+        {
+
+            Console.WriteLine("\n->Demonstaration of Locking.");
+
+            Console.WriteLine("\nLocking mentor Larry Bird");
+            ORMapper.Locking = new LockingDB(Program.ConnectionString);
+            Mentor m =  ORMapper.GetByID<Mentor>("m1", Program.ConnectionString);
+            ORMapper.Lock(m);
+            Console.WriteLine("\nLocking mentor Larry Bird from another session");
+            ORMapper.Locking = new LockingDB(Program.ConnectionString);
+
+            try
+            {
+                ORMapper.Lock(m);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception.Message);
+            }
+
+
+            Console.WriteLine("_______________________________________________________________________");
+        }
+
+   
 
     }
 }

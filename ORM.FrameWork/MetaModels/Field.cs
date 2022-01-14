@@ -171,12 +171,10 @@ namespace ORM_FrameWork.MetaModels
                     command = connection.CreateCommand();
                     command.CommandText = $"DELETE FROM {AssigmentTable} WHERE {ColumnName} = @pKey";
 
-                    NpgsqlParameter parameter = command.CreateParameter();
-                    parameter.ParameterName = "@pKey";
-                    parameter.Value = pKey;
-                    command.Parameters.Add(parameter);
+                    command.Parameters.Add(new NpgsqlParameter("@pKey", pKey));
 
                     command.ExecuteNonQuery();
+                    command.Parameters.Clear();
                     command.Dispose();
 
                     if (GetValue(obj) != null)
@@ -188,20 +186,14 @@ namespace ORM_FrameWork.MetaModels
                         command = connection.CreateCommand();
                         command.CommandText = $"INSERT INTO {AssigmentTable} ({ColumnName}, {RemoteColumnName}) VALUES (@pKey, @fKey)";
 
-                            parameter = command.CreateParameter();
-                            parameter.ParameterName = "@pKey";
-                            parameter.Value = pKey;
-                            command.Parameters.Add(parameter);
+                        command.Parameters.Add(new NpgsqlParameter("@pKey", pKey));
+                        command.Parameters.Add(new NpgsqlParameter("@fKey", innerEntity.PKey.ToColumnType(innerEntity.PKey.GetValue(o))));
 
-                            parameter = command.CreateParameter();
-                            parameter.ParameterName = "@fKey";
-                            parameter.Value = innerEntity.PKey.ToColumnType(innerEntity.PKey.GetValue(o));
-                            command.Parameters.Add(parameter);
-
-                            command.ExecuteNonQuery();
-                            command.Dispose();
-                        }
+                        command.ExecuteNonQuery();
+                        command.Parameters.Clear();
+                        command.Dispose();
                     }
+                }
                 }
                 else
                 {
