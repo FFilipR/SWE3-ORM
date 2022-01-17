@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ORM.SampleApp", "ORM.Sample
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ORM.FrameWork", "ORM.FrameWork\ORM.FrameWork.csproj", "{AFEECE7A-6E6A-4AE8-8DE6-07B000647148}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORM.TablePerTypeApp", "ORM.TablePerTypeApp\ORM.TablePerTypeApp.csproj", "{092D4320-8920-4578-B869-F12AF0D4E638}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{AFEECE7A-6E6A-4AE8-8DE6-07B000647148}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFEECE7A-6E6A-4AE8-8DE6-07B000647148}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFEECE7A-6E6A-4AE8-8DE6-07B000647148}.Release|Any CPU.Build.0 = Release|Any CPU
+		{092D4320-8920-4578-B869-F12AF0D4E638}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{092D4320-8920-4578-B869-F12AF0D4E638}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{092D4320-8920-4578-B869-F12AF0D4E638}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{092D4320-8920-4578-B869-F12AF0D4E638}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

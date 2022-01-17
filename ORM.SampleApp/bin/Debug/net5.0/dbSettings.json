@@ -2,7 +2,7 @@
     "host": "localhost",
     "username": "postgres",
     "password": "postgres",
-    "database": "ORMapperDB",
+    "database1": "ORMapperDB",
     "maxPsize": "200",
     "timeout": "60"
 }

@@ -41,19 +41,19 @@ namespace ORM_FrameWork.MetaModels
         public string RemoteColumnName { get; internal set; }
         public bool IsMtoM { get; internal set; }
 
-        internal string SqlFkey 
+        internal string SqlFkey
         {
             get
             {
-                if (IsMtoM)              
+                if (IsMtoM)
                     return $"{ORMapper.GetEntity(Type.GenericTypeArguments[0]).GetSql()} WHERE ID IN (SELECT {RemoteColumnName} FROM {AssigmentTable} WHERE {ColumnName} = @fKey)";
-                
+
                 else
                     return $"{ORMapper.GetEntity(Type.GenericTypeArguments[0]).GetSql()} WHERE {ColumnName} = @fKey";
-                
+
             }
         }
-        public object GetValue (object obj)
+        public object GetValue(object obj)
         {
             if (Member is PropertyInfo)
             {
@@ -61,9 +61,9 @@ namespace ORM_FrameWork.MetaModels
 
                 if (val is ILazyLoading)
                 {
-                    if (!(val is IEnumerable)) 
-                    { 
-                        return val.GetType().GetProperty("Value").GetValue(val); 
+                    if (!(val is IEnumerable))
+                    {
+                        return val.GetType().GetProperty("Value").GetValue(val);
                     }
                 }
 
@@ -85,49 +85,49 @@ namespace ORM_FrameWork.MetaModels
 
         public object ToColumnType(object val) // taking an object type and converting it in the corresponding type in DB
         {
-            if(IsFkey)
+            if (IsFkey)
             {
                 if (val == null)
                     return null;
 
                 Type type = (typeof(ILazyLoading).IsAssignableFrom(Type) ? Type.GenericTypeArguments[0] : Type);
                 object obj = ORMapper.GetEntity(type).PKey.GetValue(val);
-                return ORMapper.GetEntity(type).PKey.ToColumnType(obj); // for example type is jDeveloper datatype // Type.GetEntity() == ORMapper.GetEntity(Type)
+                return ORMapper.GetEntity(type).PKey.ToColumnType(obj); // for example type is jDeveloper datatype 
             }
 
 
             if (val is bool)
             {
                 if (ColumnType == typeof(int))
-                    return ((bool) val) ? true : false; 
+                    return ((bool)val) ? true : false;
                 if (ColumnType == typeof(short))
-                    return ((bool) val) ? true : false;
+                    return ((bool)val) ? true : false;
                 if (ColumnType == typeof(long))
-                    return ((bool) val) ? true : false;
+                    return ((bool)val) ? true : false;
             }
 
             return val;
         }
 
-        public object ToFieldType (object val, ICollection<object> cache, string connectionString)
+        public object ToFieldType(object val, ICollection<object> cache, string connectionString)
         {
             if (IsFkey)
             {
-                if (typeof(ILazyLoading).IsAssignableFrom(Type))   
+                if (typeof(ILazyLoading).IsAssignableFrom(Type))
                     return Activator.CreateInstance(Type, connectionString, val);
-                
+
                 return ORMapper.Create(Type, val, cache, connectionString);
             }
-            
+
 
             if (Type == typeof(bool))
             {
                 if (val is int)
-                    return ((int) val) != 0;
+                    return ((int)val) != 0;
                 if (val is long)
-                    return ((int) val) != 0;
+                    return ((int)val) != 0;
                 if (val is short)
-                    return ((int) val) != 0;
+                    return ((int)val) != 0;
             }
 
             if (Type == typeof(short))
@@ -139,20 +139,20 @@ namespace ORM_FrameWork.MetaModels
 
             if (Type.IsEnum)
                 return Enum.ToObject(Type, val);
-       
+
             return val;
         }
 
         public object FillList(object listObj, object obj, ICollection<object> cache, string connectionString)
         {
-              
+
             ORMapper.ListFiller(Type.GenericTypeArguments[0], listObj, SqlFkey, new Tuple<string, object>[] { new Tuple<string, object>("@fKey", Entity.PKey.GetValue(obj)) }, connectionString, cache);
             return listObj;
         }
 
         public void UpdateRelations(object obj, string connectionString)
         {
-          
+
 
             var connection = new NpgsqlConnection(connectionString);
             var command = new NpgsqlCommand();
@@ -160,28 +160,28 @@ namespace ORM_FrameWork.MetaModels
             command.Connection = connection;
             connection.Open();
 
-                if (!IsExternal)
-                    return;
+            if (!IsExternal)
+                return;
 
-                Entity innerEntity = ORMapper.GetEntity(Type.GenericTypeArguments[0]); // example: if table skill, innerEntity is the jDev of the skill
-                object pKey = Entity.PKey.ToColumnType(Entity.PKey.GetValue(obj));
+            Entity innerEntity = ORMapper.GetEntity(Type.GenericTypeArguments[0]); // example: if table skill, innerEntity is the jDev of the skill
+            object pKey = Entity.PKey.ToColumnType(Entity.PKey.GetValue(obj));
 
-                if (IsMtoM)
+            if (IsMtoM)
+            {
+                command = connection.CreateCommand();
+                command.CommandText = $"DELETE FROM {AssigmentTable} WHERE {ColumnName} = @pKey";
+
+                command.Parameters.Add(new NpgsqlParameter("@pKey", pKey));
+
+                command.ExecuteNonQuery();
+                command.Parameters.Clear();
+                command.Dispose();
+
+                if (GetValue(obj) != null)
                 {
-                    command = connection.CreateCommand();
-                    command.CommandText = $"DELETE FROM {AssigmentTable} WHERE {ColumnName} = @pKey";
 
-                    command.Parameters.Add(new NpgsqlParameter("@pKey", pKey));
-
-                    command.ExecuteNonQuery();
-                    command.Parameters.Clear();
-                    command.Dispose();
-
-                    if (GetValue(obj) != null)
+                    foreach (object o in (IEnumerable)GetValue(obj)) // example: jDevs in Skills table
                     {
-
-                        foreach (object o in (IEnumerable)GetValue(obj)) // example: jDevs in Skills table
-                        {
 
                         command = connection.CreateCommand();
                         command.CommandText = $"INSERT INTO {AssigmentTable} ({ColumnName}, {RemoteColumnName}) VALUES (@pKey, @fKey)";
@@ -194,57 +194,46 @@ namespace ORM_FrameWork.MetaModels
                         command.Dispose();
                     }
                 }
-                }
-                else
-                {
-                    Field field = innerEntity.GetFieldForColumn(ColumnName);
+            }
+            else
+            {
+                Field field = innerEntity.GetFieldForColumn(ColumnName);
 
-                    if (field.IsNullable)
-                    {
+                if (field.IsNullable)
+                {
                     command = connection.CreateCommand();
 
                     command.CommandText = $"UPDATE {innerEntity.TableName} SET {ColumnName} = NULL WHERE {ColumnName} = @pKey";
 
-                        NpgsqlParameter parameter = command.CreateParameter();
-                        parameter.ParameterName = "@pKey";
-                        parameter.Value = pKey;
-                        command.Parameters.Add(parameter);
+                    command.Parameters.Add(new NpgsqlParameter("@pKey", pKey));
 
-                        command.ExecuteNonQuery();
-                        command.Dispose();
-
-
-                    }
-                    else if (GetValue(obj) != null)
+                    command.ExecuteNonQuery();
+                    command.Parameters.Clear();
+                    command.Dispose();
+                }
+                else if (GetValue(obj) != null)
+                {
+                    foreach (object o in (IEnumerable)GetValue(obj))
                     {
-                        foreach (object o in (IEnumerable)GetValue(obj))
-                        {
-                            field.SetValue(o, obj);
+                        field.SetValue(o, obj);
 
                         command = connection.CreateCommand();
 
                         command.CommandText = $"UPDATE {innerEntity.TableName} SET {ColumnName} = @fKey WHERE {innerEntity.PKey.ColumnName} = @pKey";
 
-                            NpgsqlParameter parameter = command.CreateParameter();
-                            parameter.ParameterName = "@fKey";
-                            parameter.Value = pKey; // fKey is now our pKey
-                            command.Parameters.Add(parameter);
+                        command.Parameters.Add(new NpgsqlParameter("@fKey", pKey)); // fKey is now our pKey
+                        command.Parameters.Add(new NpgsqlParameter("@pKey", innerEntity.PKey.ToColumnType(innerEntity.PKey.GetValue(o))));
 
-                            parameter = command.CreateParameter();
-                            parameter.ParameterName = "@fKey";
-                            parameter.Value = innerEntity.PKey.ToColumnType(innerEntity.PKey.GetValue(o));
-                            command.Parameters.Add(parameter);
-
-                            command.ExecuteNonQuery();
-                            command.Dispose();
-
-                        }
+                        command.ExecuteNonQuery();
+                        command.Parameters.Clear();
+                        command.Dispose();
                     }
+                }
 
 
                 connection.Close();
 
             }
         }
-    } 
+    }
 }

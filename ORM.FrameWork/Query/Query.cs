@@ -154,12 +154,12 @@ namespace ORM.FrameWork.Query
                             else
                                 operation = not ? " != " : " = ";
                             sql += closed + merge + opened;
-                        sql += (((bool)q.Arguments[2] ? "Lower(" + field.ColumnName + ")" : field.ColumnName) + operation +
-                                ((bool)q.Arguments[2] ? "Lower(@p" + n.ToString() + ")" : "@p" + n.ToString()));
+                        sql += (((bool)q.Arguments[2] ? $"Lower({field.ColumnName})" : field.ColumnName) + operation +
+                                ((bool)q.Arguments[2] ? $"Lower(@p{n})" : $"@p{n}"));               
 
                         if ((bool)q.Arguments[2])
                                 q.Arguments[1] = ((string)q.Arguments[1]).ToLower();
-                            parameters.Add(new Tuple<string, object>("@p" + n++.ToString(), field.ToColumnType(q.Arguments[1])));
+                            parameters.Add(new Tuple<string, object>($"@p{n++}", field.ToColumnType(q.Arguments[1])));
 
                             opened = closed = "";
                             merge = " AND ";
@@ -174,7 +174,7 @@ namespace ORM.FrameWork.Query
                                 if (i > 1)
                                     sql += ", ";
                                 sql += "@p" + n.ToString();
-                                parameters.Add(new Tuple<string, object>("@p" + n++.ToString(), field.ToColumnType(q.Arguments[i])));
+                                parameters.Add(new Tuple<string, object>($"@p{n++}", field.ToColumnType(q.Arguments[i])));
                             }
                             sql += ")";
                             opened = closed = "";
@@ -189,8 +189,8 @@ namespace ORM.FrameWork.Query
                             else
                                 operation = not ? " >= " : " < ";
                             sql += closed + merge + opened;
-                            sql += field.ColumnName + operation + "@p" + n.ToString();
-                            parameters.Add(new Tuple<string, object>("@p" + n++.ToString(), field.ToColumnType(q.Arguments[1])));
+                            sql += field.ColumnName + operation + $"@p{n}";
+                            parameters.Add(new Tuple<string, object>($"@p{n++}", field.ToColumnType(q.Arguments[1])));
 
                             opened = closed = "";
                             merge = " AND ";

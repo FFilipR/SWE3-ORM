@@ -1,0 +1,8 @@
+{
+    "host": "localhost",
+    "username": "postgres",
+    "password": "postgres",
+    "database2": "ORMapperTablePerType",
+    "maxPsize": "200",
+    "timeout": "60"
+}

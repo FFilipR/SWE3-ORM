@@ -16,15 +16,15 @@ namespace ORM_SampleApp
         {
             // getting connection data from json file
             Config = new ConfigurationBuilder().AddJsonFile("dbSettings.json", false, true).Build();
-            ConnectionString = $"Host={Config["host"]};Username={Config["username"]};Password={Config["password"]};Database={Config["database"]};MaxPoolSize={Config["maxPsize"]};Timeout={Config["timeout"]};Pooling=true;CommandTimeout={Config["50"]};";
+            ConnectionString = $"Host={Config["host"]};Username={Config["username"]};Password={Config["password"]};Database={Config["database1"]};MaxPoolSize={Config["maxPsize"]};Timeout={Config["timeout"]};Pooling=true;CommandTimeout={Config["50"]};";
 
             ORMapper.DbConnection = new NpgsqlConnection(ConnectionString);
             ORMapper.DbConnection.Open();
 
-            //ORMapper.Cache = new CacheTracking();
+            ORMapper.Cache = new CacheTracking();
 
             //Operations.CreateDB();
-            
+
             Operations.InsertObjDemo();
             Operations.UpdateObjDemo();
             Operations.OneToNDemo();
@@ -35,7 +35,7 @@ namespace ORM_SampleApp
             Operations.QueryDemo();
             Operations.LockingDemo();
 
-           //Operations.ClearDB();
+            //Operations.ClearDB();
 
             ORMapper.DbConnection.Close();
 

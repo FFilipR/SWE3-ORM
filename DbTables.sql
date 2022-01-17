@@ -4,7 +4,7 @@ select * from Mentors;
 select * from skills;
 select * from departments;
 select * from jDevs_skills;
-
+select * from Locking;
 
 
 drop table jDevs_skills;
@@ -19,7 +19,7 @@ CREATE TABLE Locking (LClass varchar(50) NOT NULL, LObject varchar(50) NOT NULL,
 CREATE UNIQUE INDEX UX_Locking ON Locking (LClass, LObject)
 
 
-create table if not exists Mentors(
+create table Mentors(
 	ID varchar(50) primary key,
 	FirstName varchar(50),
 	LastName varchar(50),
@@ -51,9 +51,7 @@ create table JuniorDevelopers (
 	Sex int,
 	Salary int,
 	HDate timestamptz,
-	KSkill varchar(50),
 	KDepartment varchar(50),
-	foreign key (KSkill) references Skills (ID),
 	foreign key (KDepartment) references Departments (ID)
 )
 

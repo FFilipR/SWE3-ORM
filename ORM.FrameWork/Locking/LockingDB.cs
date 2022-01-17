@@ -33,6 +33,7 @@ namespace ORM.FrameWork.Locking
                 command.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS Uq_Locking ON Locking(LClass, LObject)";
                 command.ExecuteNonQuery();
                 command.Dispose();
+
                 connection.Close();
 
             }

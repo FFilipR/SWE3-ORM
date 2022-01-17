@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ORM.SampleApp.Firma
 {
-    [Entity(TableName ="Mentors")]
+    [Entity(TableName = "Mentors")]
     public class Mentor : Person
     {
         public int Salary { get; set; }

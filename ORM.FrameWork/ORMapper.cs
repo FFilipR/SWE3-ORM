@@ -31,34 +31,49 @@ namespace ORM_FrameWork
             return Entities[type];   // return value from dictionary by key
         }
 
-
         public static void SaveToDb(object obj, string connectionString)
         {
-            if (Cache != null)
-            {
-                if (!Cache.HasChanged(obj))
-                    return;
-            }
-
             Entity entity = GetEntity(obj);
+            Entity baseEntity = GetEntity(obj.GetType().BaseType);
+
+            if (baseEntity.IsMaterial)  
+                Save(obj, baseEntity, false, true, connectionString); 
+
+            Save(obj, entity, baseEntity.IsMaterial, false, connectionString);
+        }
+
+        private static void Save(object obj, Entity entity, bool isBaseMaterial, bool isBase, string connectionString)
+        {
+            string insert = string.Empty;
+            string conflict = string.Empty;
+            bool fr = true;
+
+            //if (Cache != null)
+            //{
+            //    if (!Cache.HasChanged(obj))
+            //        return;
+            //}
 
             DbConnection = new NpgsqlConnection(connectionString);
-            // DbConnection.ConnectionString = connectionString;
             var command = new NpgsqlCommand();
-
             command.Connection = DbConnection;
-
             DbConnection.Open();
             command = DbConnection.CreateCommand();
 
             command.CommandText = $"INSERT INTO {entity.TableName} (";
 
-            string conflict = $"ON CONFLICT ({entity.PKey.ColumnName }) DO UPDATE SET ";
-            string insert = string.Empty;
+            if (isBaseMaterial)
+            {
+                command.CommandText += entity.ChildKey + ", ";
+                conflict = $"ON CONFLICT ({entity.ChildKey}) DO UPDATE SET ";
+                insert = "@cKey, ";
+                command.Parameters.Add(new NpgsqlParameter("@cKey", entity.PKey.GetValue(obj)));
+            }
+            else
+                 conflict = $"ON CONFLICT ({entity.PKey.ColumnName}) DO UPDATE SET ";
 
-            bool fr = true;
 
-            for (int f = 0; f < entity.IntFields.Length; f++)
+            for (int f = 0; f < entity.LocalIntFields.Length; f++)
             {
 
                 if (f > 0)
@@ -66,20 +81,19 @@ namespace ORM_FrameWork
                     command.CommandText += ", ";
                     insert += ", ";
                 }
-                command.CommandText += entity.IntFields[f].ColumnName;
+
+                command.CommandText += entity.LocalIntFields[f].ColumnName;
 
                 insert += $"@insert{f}";
 
-                object field = entity.IntFields[f].ToColumnType(entity.IntFields[f].GetValue(obj));
+                object field = entity.LocalIntFields[f].ToColumnType(entity.LocalIntFields[f].GetValue(obj));
 
                 if (field == null)
                     field = DBNull.Value;
 
                 command.Parameters.Add(new NpgsqlParameter($"@insert{ f }", field));
 
-
-
-                if (!entity.IntFields[f].IsPkey)
+                if (!entity.LocalIntFields[f].IsPkey)
                 {
 
                     if (fr)
@@ -87,9 +101,9 @@ namespace ORM_FrameWork
                     else
                         conflict += ", ";
 
-                    conflict += $"{entity.IntFields[f].ColumnName} = @conflict{f}";
+                    conflict += $"{entity.LocalIntFields[f].ColumnName} = @conflict{f}";
 
-                    field = entity.IntFields[f].ToColumnType(entity.IntFields[f].GetValue(obj));
+                    field = entity.LocalIntFields[f].ToColumnType(entity.LocalIntFields[f].GetValue(obj));
 
                     if (field == null)
                         field = DBNull.Value;
@@ -106,7 +120,6 @@ namespace ORM_FrameWork
             DbConnection.Close();
 
 
-
             foreach (Field f in entity.ExtFields)
                 f.UpdateRelations(obj, connectionString);
 
@@ -119,7 +132,6 @@ namespace ORM_FrameWork
         {
             Entity entity = GetEntity(obj);
             DbConnection = new NpgsqlConnection(connectionString);
-            // DbConnection.ConnectionString = connectionString;
 
             var command = new NpgsqlCommand();
             command.Connection = DbConnection;
@@ -189,7 +201,6 @@ namespace ORM_FrameWork
             if (obj == null)
             {
                 DbConnection = new NpgsqlConnection(connectionString);
-                //DbConnection.ConnectionString = connectionString;
                 var command = new NpgsqlCommand();
                 command.Connection = DbConnection;
 
@@ -197,7 +208,7 @@ namespace ORM_FrameWork
                 Entity entity = GetEntity(type);
                 command = DbConnection.CreateCommand();
 
-                command.CommandText = entity.GetSql() + (string.IsNullOrWhiteSpace(entity.SubsetQuery) ? " WHERE " : " AND ") + GetEntity(type).PKey.ColumnName + " = @pKey";
+                command.CommandText = entity.GetSql() + (string.IsNullOrWhiteSpace(entity.SubsetQuery) ? " WHERE " : " AND ") + entity.PKey.ColumnName + " = @pKey";
          
                 command.Parameters.Add(new NpgsqlParameter("@pKey", pKey));
 
@@ -253,7 +264,6 @@ namespace ORM_FrameWork
         internal static void ListFiller(Type type, object listObj, string sql, IEnumerable<Tuple<string, object>> sqlParameters, string connectionString, ICollection<object> cache = null)
         {
             DbConnection = new NpgsqlConnection(connectionString);
-            //DbConnection.ConnectionString = connectionString;
 
             var command = new NpgsqlCommand();
 
@@ -298,7 +308,7 @@ namespace ORM_FrameWork
 
             }
             return typeList.ToArray();
-        }
+        } 
         public static Query<T> GetQuery<T>(string connectionString)
         {
             return new Query<T>(null, connectionString);
@@ -355,7 +365,7 @@ namespace ORM_FrameWork
             command.Dispose();
 
             command = connection.CreateCommand();
-            command.CommandText = "CREATE TABLE JuniorDevelopers (ID varchar(50) primary key, FirstName varchar(50), LastName varchar(50),BDate timestamptz, Sex int, Salary int, HDate timestamptz, KSkill varchar(50), KDepartment varchar(50), foreign key(KSkill) references Skills(ID), foreign key(KDepartment) references Departments(ID))";
+            command.CommandText = "CREATE TABLE JuniorDevelopers (ID varchar(50) primary key, FirstName varchar(50), LastName varchar(50),BDate timestamptz, Sex int, Salary int, HDate timestamptz, KDepartment varchar(50), foreign key(KDepartment) references Departments(ID))";
             command.ExecuteNonQuery();
             command.Dispose();
 

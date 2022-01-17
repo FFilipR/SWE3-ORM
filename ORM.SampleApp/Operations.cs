@@ -79,11 +79,7 @@ namespace ORM.SampleApp
             Department dep = new Department();
             dep.ID = "d1";
             dep.Name = "DevOps";
-            dep.Mentor = m3;
-
-
-        
-
+            dep.Mentor = m3;       
             ORMapper.SaveToDb(dep, Program.ConnectionString);
 
             Department dep2 = new Department();
@@ -112,20 +108,20 @@ namespace ORM.SampleApp
         {
             Console.WriteLine("\n->Demonstration of N:1 relation.");
 
-            Mentor m4 = ORMapper.GetByID<Mentor>("m1", Program.ConnectionString);
+            Mentor m1 = ORMapper.GetByID<Mentor>("m1", Program.ConnectionString);
 
             string departments = string.Empty;
 
-            if (m4.Departments != null)
+            if (m1.Departments != null)
             {
-                foreach (Department dep in m4.Departments)
+                foreach (Department dep in m1.Departments)
                 {
                     departments += $"{dep.Name}; ";
                 }
 
             }
 
-            Console.WriteLine($"Mentor {m4.FirstName} {m4.LastName} is mentoring in following Departments: {departments}");
+            Console.WriteLine($"Mentor {m1.FirstName} {m1.LastName} is mentoring in following Departments: {departments}");
             Console.WriteLine("_______________________________________________________________________");
 
         }
@@ -183,9 +179,17 @@ namespace ORM.SampleApp
             Console.WriteLine("\n->Demonstration of LazyLoading.");
 
             Department dep = ORMapper.GetByID<Department>("d1", Program.ConnectionString);
-            dep.JDevs.Add(ORMapper.GetByID<JuniorDeveloper>("jd1", Program.ConnectionString));
-            dep.JDevs.Add(ORMapper.GetByID<JuniorDeveloper>("jd2", Program.ConnectionString));
 
+            JuniorDeveloper jDev1 = ORMapper.GetByID<JuniorDeveloper>("jd1", Program.ConnectionString);
+            jDev1.Department = dep;
+            ORMapper.SaveToDb(jDev1, Program.ConnectionString);
+
+            JuniorDeveloper jDev2 = ORMapper.GetByID<JuniorDeveloper>("jd2", Program.ConnectionString);
+            jDev2.Department = dep;
+            ORMapper.SaveToDb(jDev2, Program.ConnectionString);
+
+            dep.JDevs.Add(jDev1);
+            dep.JDevs.Add(jDev2);
             ORMapper.SaveToDb(dep, Program.ConnectionString);
 
             dep = ORMapper.GetByID<Department>("d1", Program.ConnectionString);
@@ -196,7 +200,7 @@ namespace ORM.SampleApp
                 jdevs += $"{jd.FirstName} {jd.LastName}; ";
             }
 
-            Console.WriteLine($"Junior developers in department {jdevs}");
+            Console.WriteLine($"Junior developers in department {dep.Name}: {jdevs}");
             Console.WriteLine("_______________________________________________________________________");
 
         }
@@ -251,10 +255,12 @@ namespace ORM.SampleApp
 
             Console.WriteLine("\nLocking mentor Larry Bird");
             ORMapper.Locking = new LockingDB(Program.ConnectionString);
+
             Mentor m =  ORMapper.GetByID<Mentor>("m1", Program.ConnectionString);
             ORMapper.Lock(m);
             Console.WriteLine("\nLocking mentor Larry Bird from another session");
             ORMapper.Locking = new LockingDB(Program.ConnectionString);
+
 
             try
             {

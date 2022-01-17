@@ -1,4 +1,5 @@
-﻿using ORM_FrameWork.Attributes;
+﻿using ORM.FrameWork.Attributes;
+using ORM_FrameWork.Attributes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,17 +15,36 @@ namespace ORM_FrameWork.MetaModels
         public Type Member { get; private set; }
         public string TableName { get; set; }
         public Field PKey { get;  set; } // what field is primary key
+        private Field[] localIntFields = null;
 
         public Field[] ExtFields { get; private set; }
         public Field[] IntFields { get; private set; }
         public Field[] Fields { get; private set; }
-        public bool IsMaterial
+        public bool IsMaterial { get; private set;} = false;
+        public string SubsetQuery {get; private set;}
+        public string ChildKey { get; private set; }
+        public Field[] LocalIntFields
         {
-            get; private set;
-        }
-        public string SubsetQuery
-        {
-            get; private set;
+            get
+            {
+                if (localIntFields == null)
+                {
+                    Entity baseEntity = ORMapper.GetEntity(Member.BaseType);
+                    if (!baseEntity.IsMaterial)  
+                        return IntFields; 
+
+                    List<Field> fieldList = new List<Field>();
+                    foreach (Field f in IntFields)
+                    {
+                        if (baseEntity.IntFields.Where(@if => @if.ColumnName == f.ColumnName).Count() == 0)  
+                            fieldList.Add(f); 
+                    }
+
+                    localIntFields = fieldList.ToArray();
+                }
+
+                return localIntFields;
+            }
         }
 
         public Entity(Type type)
@@ -33,11 +53,26 @@ namespace ORM_FrameWork.MetaModels
 
             EntityAttribute typeAttr = (EntityAttribute)type.GetCustomAttribute(typeof(EntityAttribute));
 
-            if ((typeAttr == null) || (string.IsNullOrWhiteSpace(typeAttr.TableName)))
-                TableName = type.Name.ToUpper();
-            
+            if (typeAttr == null)
+            {
+                MaterialAttribute materialAttr = (MaterialAttribute)type.GetCustomAttribute(typeof(MaterialAttribute));
+                if (materialAttr != null)
+                {
+                    TableName = materialAttr.TableName;
+                    SubsetQuery = materialAttr.SubsetQuery;
+                    IsMaterial = true;
+                }
+            }
+
             else
+            {
                 TableName = typeAttr.TableName;
+                SubsetQuery = typeAttr.SubsetQuery;
+                ChildKey = typeAttr.ChildKey;
+            }
+
+            if (string.IsNullOrWhiteSpace(TableName))
+                TableName = type.Name;
 
             Fields = getFields(type).ToArray();
             IntFields = Fields.Where(f => (!f.IsExternal)).ToArray();
@@ -94,10 +129,10 @@ namespace ORM_FrameWork.MetaModels
             return fields;
         }
 
-        public string GetSql(string prefix = null)
+        public string GetSql()
         {
-            if (prefix == null)
-                prefix = string.Empty;
+     
+            Entity baseEntity = ORMapper.GetEntity(Member.BaseType);
 
             string str = "SELECT ";
 
@@ -106,10 +141,17 @@ namespace ORM_FrameWork.MetaModels
                 if (f > 0) 
                     str += ", ";
 
-                str += prefix.Trim() + IntFields[f].ColumnName;
+                str += IntFields[f].ColumnName;
             }
 
             str += $" FROM {TableName}";
+
+
+            if (baseEntity.IsMaterial)
+                str += $" INNER JOIN {baseEntity.TableName} ON {PKey.ColumnName} = {ChildKey}"; 
+
+            if (!string.IsNullOrWhiteSpace(SubsetQuery))
+                str += $" WHERE ({SubsetQuery})";
 
             return str;
         }

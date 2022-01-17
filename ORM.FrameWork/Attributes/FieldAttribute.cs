@@ -10,6 +10,6 @@ namespace ORM_FrameWork.Attributes
     {
         public string ColumnName = null;
         public Type ColumnType = null;
-        public bool Nullable = true;
+        public bool Nullable = false;
     }
 }
