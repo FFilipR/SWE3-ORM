@@ -375,9 +375,9 @@ namespace ORM_FrameWork
             if (Locking != null)
                 Locking.Release(obj);
         }
-         
-        // public method which takes the connection string and creates all tables in the database
-        public static void CreateDbTables(string connectionString)
+
+        // public method which takes the connection string to SampleApp and creates all tables in the database
+        public static void CreateDbTables1(string connectionString)
         {
             NpgsqlConnection connection = new NpgsqlConnection(connectionString);
             connection.Open();
@@ -452,9 +452,8 @@ namespace ORM_FrameWork
             connection.Close();
         }
 
-        // public method which takes the connection string and drops all tables from the database
-
-        public static void DropDbTables(string connectionString)
+        // public method which takes the connection string to SampleApp and drops all tables from the database
+        public static void DropDbTables1(string connectionString)
         {
             NpgsqlConnection connection = new NpgsqlConnection(connectionString);
             connection.Open();
@@ -486,6 +485,127 @@ namespace ORM_FrameWork
 
             command = connection.CreateCommand();
             command.CommandText = "DROP TABLE Locking";
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            connection.Close();
+        }
+
+        // public method which takes the connection string from TablePerTypeApp and creates all tables in the database
+        public static void CreateDbTables2(string connectionString)
+        {
+            NpgsqlConnection connection = new NpgsqlConnection(connectionString);
+            connection.Open();
+            NpgsqlCommand command = connection.CreateCommand();
+
+            command.CommandText = "CREATE TABLE Persons" +
+                                    "(" +
+                                        "ID varchar(50) primary key, " +
+                                        "FirstName varchar(50), " +
+                                        "LastName varchar(50), " +
+                                        "Sex int, " +
+                                        "BDate timestamptz " +
+                                    ")";
+
+            command.ExecuteNonQuery();
+            command.Dispose();
+   
+            command = connection.CreateCommand();
+            command.CommandText = "CREATE TABLE Mentors " +
+                                    "(" +
+                                        "KPerson varchar(50) references Persons(ID) primary key, " +
+                                        "HDate timestamptz, " +
+                                        "Salary int " +
+                                    ")";
+
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            command = connection.CreateCommand();
+            command.CommandText = "CREATE TABLE Skills " +
+                                    "(" +
+                                        "ID varchar(50) primary key, " +
+                                        "Name varchar(50), " +
+                                        "KMentor varchar(50), " +
+                                        "foreign key(KMentor) references Mentors(KPerson)" +
+                                    ")";
+
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            command = connection.CreateCommand();
+            command.CommandText = "CREATE TABLE Departments " +
+                                    "(" +
+                                        "ID varchar(50) primary key, " +
+                                        "Name varchar(50), " +
+                                        "KMentor varchar(50), " +
+                                        "foreign key(KMentor) references Mentors(KPerson)" +
+                                    ")";
+
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            command = connection.CreateCommand();
+            command.CommandText = "CREATE TABLE JuniorDevelopers " +
+                                    "(" +
+                                        "KPerson varchar(50) references Persons(ID) primary key, " +
+                                        "KDepartment varchar(50), " +
+                                        "HDate timestamptz, " +
+                                        "Salary int, " +
+                                        "foreign key(KDepartment) references Departments(ID)" +
+                                    ")";
+
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            command = connection.CreateCommand();
+            command.CommandText = "CREATE TABLE jDevs_skills" +
+                                    "(" +
+                                        "KjDev varchar(50), " +
+                                        "KSkill varchar(50), " +
+                                        "foreign key(KjDev) references JuniorDevelopers(KPerson), " +
+                                        "foreign key(KSkill) references Skills(ID)" +
+                                    "); ";
+
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            connection.Close();
+        }
+
+        // public method which takes the connection string to TablePerTypeApp and drops all tables from the database
+        public static void DropDbTables2(string connectionString)
+        {
+            NpgsqlConnection connection = new NpgsqlConnection(connectionString);
+            connection.Open();
+            NpgsqlCommand command = connection.CreateCommand();
+
+            command.CommandText = "DROP TABLE jDevs_skills";
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            command = connection.CreateCommand();
+            command.CommandText = "DROP TABLE JuniorDevelopers";
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            command = connection.CreateCommand();
+            command.CommandText = "DROP TABLE Departments";
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            command = connection.CreateCommand();
+            command.CommandText = "DROP TABLE Skills";
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            command = connection.CreateCommand();
+            command.CommandText = "DROP TABLE Mentors";
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            command = connection.CreateCommand();
+            command.CommandText = "DROP TABLE Persons";
             command.ExecuteNonQuery();
             command.Dispose();
 
