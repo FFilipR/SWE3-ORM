@@ -13,23 +13,29 @@ using ORM_SampleApp;
 
 namespace ORM.SampleApp
 {
+    // Class which represents all ORM operations
     public static class Operations 
     {
    
+        // public method which creates the database 
         public static void CreateDB()
         {
             Console.WriteLine("->Createing DB tables.");
 
-            ORMapper.CreateDbTables(Program.ConnectionString);
+            ORMapper.CreateDbTables1(Program.ConnectionString);
             Console.WriteLine("_______________________________________________________________________");
         }
+
+        // public method which clears the database
         public static void ClearDB()
         {
             Console.WriteLine("->Droping DB tables.");
 
-            ORMapper.DropDbTables(Program.ConnectionString);
+            ORMapper.DropDbTables1(Program.ConnectionString);
             Console.WriteLine("_______________________________________________________________________");
         }
+
+        // public method which creates and inserts a object into the database
         public static void InsertObjDemo()
         {
 
@@ -50,6 +56,7 @@ namespace ORM.SampleApp
 
         }
 
+        // public method which gets a object from the databes, updates it and inserts it back into the database
         public static void UpdateObjDemo()
         {
             Console.WriteLine("\n->Demonstration of update of a object from DB.");
@@ -68,7 +75,7 @@ namespace ORM.SampleApp
 
         }
 
-        // Foreign Key 1:n 
+        // public method which works with foreign keys and demosntrates the 1 to N relation
         public static void OneToNDemo()
         {
             Console.WriteLine("\n->Demonstration of 1:N relation.");
@@ -103,7 +110,8 @@ namespace ORM.SampleApp
 
 
         }
-        // Foreign key n:1
+
+        // public method which works with foreign keys and demosntrates the N to 1 relation
         public static void NtoOneDemo()
         {
             Console.WriteLine("\n->Demonstration of N:1 relation.");
@@ -126,7 +134,7 @@ namespace ORM.SampleApp
 
         }
 
-        // m:n
+        // public method which works with foreign keys and demosntrates the M to N relation
         public static void MtoNDemo()
         {
             Console.WriteLine("\n-> Demonstration of M:N relation.");
@@ -174,6 +182,7 @@ namespace ORM.SampleApp
 
         }
 
+        // public method which shows a demonstration of lazy loading
         public static void LazyListDemo()
         {
             Console.WriteLine("\n->Demonstration of LazyLoading.");
@@ -205,6 +214,7 @@ namespace ORM.SampleApp
 
         }
 
+        // public method which shows a demonstration of caching
         public static void CacheDemo()
         {
             Console.WriteLine("\n->Demonstaration of Cache.");
@@ -227,6 +237,7 @@ namespace ORM.SampleApp
             Console.WriteLine("_______________________________________________________________________");
         }
 
+        // public method which shows a demonstration of a query
         public static void QueryDemo()
         {
             Console.WriteLine("\n->Demonstaration of Query.");
@@ -248,10 +259,11 @@ namespace ORM.SampleApp
             Console.WriteLine("_______________________________________________________________________");
         }
 
+        // public method which shows a demonstration of database locking
         public static void LockingDemo()
         {
 
-            Console.WriteLine("\n->Demonstaration of Locking.");
+            Console.WriteLine("\n->Demonstaration of Database Locking.");
 
             Console.WriteLine("\nLocking mentor Larry Bird");
             ORMapper.Locking = new LockingDB(Program.ConnectionString);
@@ -274,8 +286,5 @@ namespace ORM.SampleApp
 
             Console.WriteLine("_______________________________________________________________________");
         }
-
-   
-
     }
 }

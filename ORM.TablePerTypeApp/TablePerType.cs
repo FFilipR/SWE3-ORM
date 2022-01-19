@@ -10,6 +10,7 @@ namespace ORM.TablePerTypeApp
 {
     public static class TablePerType
     {
+        // Class which represents a demonstration of Table Per Type Inheritance
         public static void Demo()
         {
             Console.WriteLine("\n->Demonstration of Table Per Type.");
@@ -34,18 +35,21 @@ namespace ORM.TablePerTypeApp
             {
                 jDevs += $"{jDev.FirstName} {jDev.LastName}; ";
             }
-            Console.WriteLine($"\nJunior Developers with salary > 2400e: {jDevs}");
+            
+            Console.WriteLine($"Junior Developers with salary > 2400e: {jDevs}");
 
             string persons = string.Empty;
-
-            Console.WriteLine("\nShow all persons:");
             Console.WriteLine("_______________________________________________________________________");
+            Console.WriteLine("\nShow all persons:\n");
+
             foreach (Person prs in ORMapper.GetQuery<Person>(Program.ConnectionString))
             {
                     Console.WriteLine($"{prs.FirstName} {prs.LastName} -> {prs.GetType().Name}");
             }
 
         }
+
+        // public method which creates a new mentor and saves it into the database
         public static void InsertMentor()
         {
             Mentor m1 = new Mentor();
@@ -61,6 +65,7 @@ namespace ORM.TablePerTypeApp
             ORMapper.SaveToDb(m1, Program.ConnectionString);
         }
 
+        // public method which creates two junior developers and saves them into the database
         public static void InsertJdevs()
         {
             JuniorDeveloper jDev1 = new JuniorDeveloper();
@@ -82,6 +87,24 @@ namespace ORM.TablePerTypeApp
             jDev2.Sex = (int)Person.Gender.FEMALE;
             jDev2.Salary = 1900;
             ORMapper.SaveToDb(jDev2, Program.ConnectionString);
+        }
+
+        // public method which creates the database 
+        public static void CreateDB()
+        {
+            Console.WriteLine("->Createing DB tables.");
+
+            ORMapper.CreateDbTables2(Program.ConnectionString);
+            Console.WriteLine("_______________________________________________________________________");
+        }
+
+        // public method which clears the database
+        public static void ClearDB()
+        {
+            Console.WriteLine("->Droping DB tables.");
+
+            ORMapper.DropDbTables2(Program.ConnectionString);
+            Console.WriteLine("_______________________________________________________________________");
         }
     }
 }

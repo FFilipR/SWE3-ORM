@@ -1,9 +1,9 @@
-select * from Persons;
-select * from JuniorDevelopers;
-select * from Mentors;
-select * from skills;
-select * from departments;
-select * from jDevs_skills;
+drop table jDevs_skills;
+drop table JuniorDevelopers;
+drop table Departments;
+drop table Skills;
+drop table Mentors;
+drop table Persons;
 
 create table Persons (
 	ID varchar(50) primary key,
@@ -12,11 +12,13 @@ create table Persons (
 	Sex int,
 	BDate timestamptz
 )
+
 create table Mentors (
 	KPerson varchar(50) references Persons(ID) primary key,
 	HDate timestamptz,
 	Salary int
 )
+
 create table Skills (
 	ID varchar(50) primary key,
 	Name varchar(50),
@@ -33,9 +35,10 @@ create table Departments (
 
 create table JuniorDevelopers (
 	KPerson varchar(50) references Persons(ID) primary key,
-	KDepartment varchar(50) references Departments(ID) foreign key,
+	KDepartment varchar(50), 
 	HDate timestamptz,
-	Salary int
+	Salary int,
+	foreign key (KDepartment) references Departments(ID) 
 )
 
 create table jDevs_skills(
