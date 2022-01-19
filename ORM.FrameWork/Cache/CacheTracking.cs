@@ -10,11 +10,14 @@ using System.Threading.Tasks;
 
 namespace ORM.FrameWork.Cache
 {
+    //Class that represents a implementation of a tracking cache 
+
     public class CacheTracking : Cache, ICache
     {
-
+        // protected dictionary of hashes
         protected Dictionary<Type, Dictionary<object, string>> Hashes = new Dictionary<Type, Dictionary<object, string>>();
 
+        // protected dictionary that takes a type and returns a type hash.
         protected virtual Dictionary<object, string> GetHash(Type type)
         {
             if (Hashes.ContainsKey(type))
@@ -26,6 +29,7 @@ namespace ORM.FrameWork.Cache
             return value;
         }
 
+        //protected method that takes a object and retuns a hash for it.
         protected string ComputeHash(object obj)
         {
             string value = string.Empty;
@@ -59,7 +63,7 @@ namespace ORM.FrameWork.Cache
 
             return Encoding.UTF8.GetString(SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(value)));
         }
-
+        // public method that takes an object and puts it into the cache
         public override void Put(object obj)
         {
             base.Put(obj);
@@ -68,12 +72,14 @@ namespace ORM.FrameWork.Cache
                 GetHash(obj.GetType())[ORMapper.GetEntity(obj).PKey.GetValue(obj)] = ComputeHash(obj);
         }
 
+        // public method that takes an object and removes it from cache
         public override void Remove(object obj)
         {
             base.Remove(obj);
             GetHash(obj.GetType()).Remove(ORMapper.GetEntity(obj).PKey.GetValue(obj));
         }
 
+        // public method that takes an object and notifies (true/false) whether it has changed or not
         public override bool HasChanged(object obj)
         {
             Dictionary<object, string> hash = GetHash(obj.GetType());

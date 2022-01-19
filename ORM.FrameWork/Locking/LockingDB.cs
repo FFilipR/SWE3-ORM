@@ -9,44 +9,47 @@ using System.Threading.Tasks;
 
 namespace ORM.FrameWork.Locking
 {
+    // Class that reprensents implementation of database locking
     public class LockingDB : ILocking
     {
+        // public property that represents a key of the session
         public string SessionKey { get; private set; }
-        public string ConnectionString { get; set; }
+
+        // protected property which represents a conneciton to database
+        protected string ConnectionString { get; set; }
+
+        // public property which gets or sets the timeout for locking
         public int TimeOut { get; set; } = 240;
 
+        // Constructor which takes a connection string, creates a new instance of it, then creates a locking table with unique index
         public LockingDB(string connectionString)
         {
             this.SessionKey = Guid.NewGuid().ToString();
             this.ConnectionString = connectionString;
-            try
-            {
-                NpgsqlConnection connection = new NpgsqlConnection(connectionString);
-                connection.Open();
-                NpgsqlCommand command = connection.CreateCommand();
 
-                command.CommandText = "CREATE TABLE IF NOT EXISTS Locking (LClass varchar(50) NOT NULL, LObject varchar(50) NOT NULL, LTime timestamptz NOT NULL, LOwner varchar(50))";
-                command.ExecuteNonQuery();
-                command.Dispose();
+            NpgsqlConnection connection = new NpgsqlConnection(connectionString);
+            connection.Open();
+            NpgsqlCommand command = connection.CreateCommand();
 
-                command = connection.CreateCommand();
-                command.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS Uq_Locking ON Locking(LClass, LObject)";
-                command.ExecuteNonQuery();
-                command.Dispose();
+            command.CommandText = "CREATE TABLE IF NOT EXISTS Locking (LClass varchar(50) NOT NULL, LObject varchar(50) NOT NULL, LTime timestamptz NOT NULL, LOwner varchar(50))";
+            command.ExecuteNonQuery();
+            command.Dispose();
 
-                connection.Close();
+            command = connection.CreateCommand();
+            command.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS Uq_Locking ON Locking(LClass, LObject)";
+            command.ExecuteNonQuery();
+            command.Dispose();
 
-            }
-            catch (Exception)
-            {
-            }
+            connection.Close();
         }
 
+        // private method which takes an object and generate keys for it
         private (string ClassKey, string ObjectKey) GetKeys(object obj)
         {
             return (ORMapper.GetEntity(obj).TableName.ToLower(), ORMapper.GetEntity(obj).PKey.ToColumnType(ORMapper.GetEntity(obj).PKey.GetValue(obj)).ToString());
         }
 
+        // private method that takes an object and and locks the owner of it, and then retuns the owners key
         private string GetLock(object obj)
         {
             (string ClassKey, string ObjectKey) keys = GetKeys(obj);
@@ -76,6 +79,7 @@ namespace ORM.FrameWork.Locking
             return val;
         }
 
+        // private method that takes a object and creates a lock to it
         private void CreateLock(object obj)
         {
             (string ClassKey, string ObjectKey) keys = GetKeys(obj);
@@ -99,6 +103,8 @@ namespace ORM.FrameWork.Locking
             command.Dispose();
             connection.Close();
         }
+
+        // public method which takes a object and locks it
         public virtual void Lock(object obj)
         {
             string owner = GetLock(obj);
@@ -115,6 +121,7 @@ namespace ORM.FrameWork.Locking
 
         }
 
+        // public method that takes a object and releases it
         public virtual void Release(object obj)
         {
             (string ClassKey, string ObjectKey) keys = GetKeys(obj);
@@ -134,6 +141,7 @@ namespace ORM.FrameWork.Locking
             connection.Close();
         }
 
+        // public method that purges the locks which timed out
         public virtual void Purge()
         {
             NpgsqlConnection connection = new NpgsqlConnection(ConnectionString);

@@ -13,14 +13,22 @@ using System.Threading.Tasks;
 
 namespace ORM_FrameWork
 {
+    // Class which implements the functionalities of the Object Relational Mapping
     public class ORMapper
     {
-        private static Dictionary<Type, Entity> Entities = new Dictionary<Type, Entity>();
+        // public property which gets/sets a pl sql connection to the database
         public static NpgsqlConnection DbConnection { get; set; }
 
+        // private member dictionary which consists type and entities
+        private static Dictionary<Type, Entity> Entities = new Dictionary<Type, Entity>();
+
+        // public property which gets/sets the db locking 
+        public static ILocking Locking { get; set; }
+
+        // public property which gets/sets the cache of the framework
         public static ICache Cache { get; set; }
 
-        public static ILocking Locking { get; set; } 
+        // internal method which takes a object as a parameter and gets a entity for this object
         internal static Entity GetEntity(object obj)
         {
             Type type = ((obj is Type) ? (Type)obj : obj.GetType()); // if obj then GetType , otherwise type
@@ -28,19 +36,21 @@ namespace ORM_FrameWork
             if (!Entities.ContainsKey(type))
                 Entities.Add(type, new Entity(type));
 
-            return Entities[type];   // return value from dictionary by key
+            return Entities[type];   // returns value from dictionary by key
         }
 
+        // public method which  takes an object and conneciton string and saves it 
         public static void SaveToDb(object obj, string connectionString)
         {
-            Entity entity = GetEntity(obj);
-            Entity baseEntity = GetEntity(obj.GetType().BaseType);
+       
+            if (GetEntity(obj.GetType().BaseType).IsMaterial)  
+                Save(obj, GetEntity(obj.GetType().BaseType), false, true, connectionString); 
 
-            if (baseEntity.IsMaterial)  
-                Save(obj, baseEntity, false, true, connectionString); 
-
-            Save(obj, entity, baseEntity.IsMaterial, false, connectionString);
+            Save(obj, GetEntity(obj), GetEntity(obj.GetType().BaseType).IsMaterial, false, connectionString);
         }
+
+
+        // private method which  takes an object, entity, baseMaterial boolean, base boolean and conneciton string and saves the object in the database
 
         private static void Save(object obj, Entity entity, bool isBaseMaterial, bool isBase, string connectionString)
         {
@@ -64,7 +74,7 @@ namespace ORM_FrameWork
 
             if (isBaseMaterial)
             {
-                command.CommandText += entity.ChildKey + ", ";
+                command.CommandText += $"{entity.ChildKey}, ";
                 conflict = $"ON CONFLICT ({entity.ChildKey}) DO UPDATE SET ";
                 insert = "@cKey, ";
                 command.Parameters.Add(new NpgsqlParameter("@cKey", entity.PKey.GetValue(obj)));
@@ -72,10 +82,8 @@ namespace ORM_FrameWork
             else
                  conflict = $"ON CONFLICT ({entity.PKey.ColumnName}) DO UPDATE SET ";
 
-
             for (int f = 0; f < entity.LocalIntFields.Length; f++)
             {
-
                 if (f > 0)
                 {
                     command.CommandText += ", ";
@@ -119,27 +127,39 @@ namespace ORM_FrameWork
             command.Dispose();
             DbConnection.Close();
 
-
-            foreach (Field f in entity.ExtFields)
-                f.UpdateRelations(obj, connectionString);
+            if (!isBase)
+                foreach (Field f in entity.ExtFields)
+                    f.UpdateRelations(obj, connectionString);
 
             if (Cache != null)
                 Cache.Put(obj);
 
         }
 
+        // public method which takes a object and connection string, and deletes the object 
         public static void DeleteFromDb(object obj, string connectionString)
-        {
-            Entity entity = GetEntity(obj);
-            DbConnection = new NpgsqlConnection(connectionString);
+        {        
+            if (GetEntity(obj.GetType().BaseType).IsMaterial)
+            {
+                DeleteFromDb(obj, false, GetEntity(obj), connectionString );
+                DeleteFromDb(obj, true, GetEntity(obj.GetType().BaseType), connectionString);
+            }
+            else
+                DeleteFromDb(obj, true, GetEntity(obj), connectionString); 
+        }
 
+
+        // priavate method which takes a object, base boolean, entity and  connection string, and deletes the object from database
+        private static void DeleteFromDb(object obj, bool isBase, Entity entity, string connectionString)
+        {
+            DbConnection = new NpgsqlConnection(connectionString);
             var command = new NpgsqlCommand();
             command.Connection = DbConnection;
+
             DbConnection.Open();
             command = DbConnection.CreateCommand();
 
-            command.CommandText = $"DELETE FROM {entity.TableName} WHERE {entity.PKey.ColumnName} = @pKey";
-  
+            command.CommandText = $"DELETE FROM {entity.TableName} WHERE {(isBase ? entity.PKey.ColumnName : entity.ChildKey)} = @pKey";
             command.Parameters.Add(new NpgsqlParameter("@pKey", entity.PKey.GetValue(obj)));
 
             command.ExecuteNonQuery();
@@ -148,6 +168,7 @@ namespace ORM_FrameWork
             DbConnection.Close();
         }
 
+        // internal method which takes a type, dataReader, cache and conneciton string and then creates a object
         internal static object Create(Type type, NpgsqlDataReader reader, ICollection<object> cache, string connectionString)
         {
 
@@ -190,6 +211,8 @@ namespace ORM_FrameWork
             return obj;
         }
 
+        // internal method which takes a type, primary key, cache and conneciton string and then creates a object for the database
+
         internal static object Create(Type type, object pKey, ICollection<object> cache, string connectionString)
 
         {
@@ -231,15 +254,15 @@ namespace ORM_FrameWork
 
             return obj;
 
-        }
 
+        }
+        /// pulbic method which  takes a primary key and connection string and then gets [T] from the database for the provided [primaryKey]
         public static T GetByID<T>(object pKey, string connectionString)
         {
             return (T)Create(typeof(T), pKey, null, connectionString);
         }
 
-
-
+        // internal method which takes a type, primary key and cache and then gets the object for which is searched for
         internal static object CacheSearch(Type type, object pKey, ICollection<object> cache)
         {
             if ((Cache != null) && Cache.Contains(type, pKey))
@@ -260,7 +283,7 @@ namespace ORM_FrameWork
             return null;
         }
 
-
+        // internal method which takes type, object lsit, sql , tuple of sql parameters, conenciton string and cache, then it fills the list
         internal static void ListFiller(Type type, object listObj, string sql, IEnumerable<Tuple<string, object>> sqlParameters, string connectionString, ICollection<object> cache = null)
         {
             DbConnection = new NpgsqlConnection(connectionString);
@@ -298,6 +321,8 @@ namespace ORM_FrameWork
             DbConnection.Close();
 
         }
+
+        // internal method which takes a type and gets the type of this child
         internal static Type[] GetTypeOfChild(Type type)
         {
             List<Type> typeList = new List<Type>();
@@ -309,11 +334,14 @@ namespace ORM_FrameWork
             }
             return typeList.ToArray();
         } 
+
+        // public method which takes a conneciton string and gets ghe query for a class
         public static Query<T> GetQuery<T>(string connectionString)
         {
             return new Query<T>(null, connectionString);
         }
 
+        // public method which takes a sql, conneciton string, enumeration of keys and enumeration of values and the returns a list of objects for the given sql query
         public static List<T> GetFromSql<T>(string sql, string connectionString, IEnumerable<string> keys = null, IEnumerable<object> vals = null)
         {
             List<T> listObj = new List<T>();
@@ -333,49 +361,99 @@ namespace ORM_FrameWork
             return listObj;
         }
 
+        // public method which takes a object and locks it
         public static void Lock(object obj)
         {
             if (Locking != null)
                 Locking.Lock(obj);
         }
+
+        // public method which takes a object and releases the lock
+
         public static void Release(object obj)
         {
             if (Locking != null)
                 Locking.Release(obj);
         }
-
+         
+        // public method which takes the connection string and creates all tables in the database
         public static void CreateDbTables(string connectionString)
         {
             NpgsqlConnection connection = new NpgsqlConnection(connectionString);
             connection.Open();
             NpgsqlCommand command = connection.CreateCommand();
 
-            command.CommandText = "CREATE TABLE Mentors(ID varchar(50) primary key, FirstName varchar(50), LastName varchar(50), BDate timestamptz, Sex int, Salary int, HDate timestamptz)";
+            command.CommandText =   "CREATE TABLE Mentors" +
+                                    "(" +
+                                        "ID varchar(50) primary key, " +
+                                        "FirstName varchar(50), " +
+                                        "LastName varchar(50), " +
+                                        "BDate timestamptz, " +
+                                        "Sex int, " +
+                                        "Salary int, " +
+                                        "HDate timestamptz" +
+                                    ")";
+
             command.ExecuteNonQuery();
             command.Dispose();
 
             command = connection.CreateCommand();
-            command.CommandText = "CREATE TABLE Skills (ID varchar(50) primary key, Name varchar(50), KMentor varchar(50), foreign key(KMentor) references Mentors(ID))";
+            command.CommandText =   "CREATE TABLE Skills " +
+                                    "(" +
+                                        "ID varchar(50) primary key, " +
+                                        "Name varchar(50), " +
+                                        "KMentor varchar(50), " +
+                                        "foreign key(KMentor) references Mentors(ID)" +
+                                    ")";
+
             command.ExecuteNonQuery();
             command.Dispose();
 
             command = connection.CreateCommand();
-            command.CommandText = "CREATE TABLE Departments (ID varchar(50) primary key, Name varchar(50), KMentor varchar(50), foreign key(KMentor) references Mentors(ID))";
+            command.CommandText =   "CREATE TABLE Departments " +
+                                    "(" +
+                                        "ID varchar(50) primary key, " +
+                                        "Name varchar(50), " +
+                                        "KMentor varchar(50), " +
+                                        "foreign key(KMentor) references Mentors(ID)" +
+                                    ")";
+
             command.ExecuteNonQuery();
             command.Dispose();
 
             command = connection.CreateCommand();
-            command.CommandText = "CREATE TABLE JuniorDevelopers (ID varchar(50) primary key, FirstName varchar(50), LastName varchar(50),BDate timestamptz, Sex int, Salary int, HDate timestamptz, KDepartment varchar(50), foreign key(KDepartment) references Departments(ID))";
+            command.CommandText =   "CREATE TABLE JuniorDevelopers " +
+                                    "(" +
+                                        "ID varchar(50) primary key, " +
+                                        "FirstName varchar(50), " +
+                                        "LastName varchar(50), " +
+                                        "BDate timestamptz, " +
+                                        "Sex int, Salary int, " +
+                                        "HDate timestamptz, " +
+                                        "KDepartment varchar(50), " +
+                                        "foreign key(KDepartment) references Departments(ID)" +
+                                    ")";
+
             command.ExecuteNonQuery();
             command.Dispose();
 
             command = connection.CreateCommand();
-            command.CommandText = "CREATE TABLE jDevs_skills(KjDev varchar(50), KSkill varchar(50), foreign key(KjDev) references JuniorDevelopers(ID), foreign key(KSkill) references Skills(ID)); ";
+            command.CommandText =   "CREATE TABLE jDevs_skills" +
+                                    "(" +
+                                        "KjDev varchar(50), " +
+                                        "KSkill varchar(50), " +
+                                        "foreign key(KjDev) references JuniorDevelopers(ID), " +
+                                        "foreign key(KSkill) references Skills(ID)" +
+                                    "); ";
+
             command.ExecuteNonQuery();
             command.Dispose();
 
             connection.Close();
         }
+
+        // public method which takes the connection string and drops all tables from the database
+
         public static void DropDbTables(string connectionString)
         {
             NpgsqlConnection connection = new NpgsqlConnection(connectionString);

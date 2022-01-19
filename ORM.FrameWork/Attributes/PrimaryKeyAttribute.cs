@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ORM_FrameWork.Attributes
 {
+    //Attribute that represent a property as an primary key field.
     public class PrimaryKeyAttribute : FieldAttribute
     {
     }

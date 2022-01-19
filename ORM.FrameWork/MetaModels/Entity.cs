@@ -10,19 +10,40 @@ using System.Threading.Tasks;
 
 namespace ORM_FrameWork.MetaModels
 {
+    // Class which represents a entity 
     internal class Entity
     {
+        //  public property which gets and sets a member of the entity
         public Type Member { get; private set; }
+
+        // public property which gets and sets  the name of the table
         public string TableName { get; set; }
-        public Field PKey { get;  set; } // what field is primary key
+
+        //public property which gets and sets  the private key of the entity
+        public Field PKey { get; set; }
+
+        // private property of local internal fields of the entity
         private Field[] localIntFields = null;
 
+        //public property which gets and sets external fields of the entity
         public Field[] ExtFields { get; private set; }
+
+        //public property which gets and sets internal fields of the entity
         public Field[] IntFields { get; private set; }
+
+        //public property which gets and sets  fields of the entity
         public Field[] Fields { get; private set; }
-        public bool IsMaterial { get; private set;} = false;
-        public string SubsetQuery {get; private set;}
+
+        //public property which gets and sets whether the entity is material or not
+        public bool IsMaterial { get; private set; } = false;
+
+        //public property which gets and sets the subset query of the entity
+        public string SubsetQuery { get; private set; }
+
+        //public property which gets and sets the key of the child  of the entity
         public string ChildKey { get; private set; }
+
+        // public property which gets internal fields which are in te local entity table
         public Field[] LocalIntFields
         {
             get
@@ -30,14 +51,14 @@ namespace ORM_FrameWork.MetaModels
                 if (localIntFields == null)
                 {
                     Entity baseEntity = ORMapper.GetEntity(Member.BaseType);
-                    if (!baseEntity.IsMaterial)  
-                        return IntFields; 
+                    if (!baseEntity.IsMaterial)
+                        return IntFields;
 
                     List<Field> fieldList = new List<Field>();
                     foreach (Field f in IntFields)
                     {
-                        if (baseEntity.IntFields.Where(@if => @if.ColumnName == f.ColumnName).Count() == 0)  
-                            fieldList.Add(f); 
+                        if (baseEntity.IntFields.Where(@if => @if.ColumnName == f.ColumnName).Count() == 0)
+                            fieldList.Add(f);
                     }
 
                     localIntFields = fieldList.ToArray();
@@ -47,6 +68,7 @@ namespace ORM_FrameWork.MetaModels
             }
         }
 
+        // construcotor which takes a type end creates new instances of the class
         public Entity(Type type)
         {
             this.Member = type;
@@ -79,6 +101,7 @@ namespace ORM_FrameWork.MetaModels
             ExtFields = Fields.Where(f => f.IsExternal).ToArray();
         }
 
+        // public method which takes a type and gets list of fields of this type
         public List<Field> getFields(Type type)
         {
             List<Field> fields = new List<Field>();
@@ -108,9 +131,9 @@ namespace ORM_FrameWork.MetaModels
                         field.IsExternal = typeof(IEnumerable).IsAssignableFrom(property.PropertyType);
                         field.AssigmentTable = ((ForeignKeyAttribute)fieldAttr).AssigmentTable;
                         field.RemoteColumnName = ((ForeignKeyAttribute)fieldAttr).RemoteColumnName;
-                        field.IsMtoM = (!string.IsNullOrWhiteSpace(field.AssigmentTable));
+                        field.IsMtoN = (!string.IsNullOrWhiteSpace(field.AssigmentTable));
                     }
-                                    
+
                 }
                 else
                 {
@@ -129,16 +152,17 @@ namespace ORM_FrameWork.MetaModels
             return fields;
         }
 
+        // public method which generates a sql statement of this entity
         public string GetSql()
         {
-     
+
             Entity baseEntity = ORMapper.GetEntity(Member.BaseType);
 
             string str = "SELECT ";
 
-            for(int f = 0; f < IntFields.Length; f++)
-			{
-                if (f > 0) 
+            for (int f = 0; f < IntFields.Length; f++)
+            {
+                if (f > 0)
                     str += ", ";
 
                 str += IntFields[f].ColumnName;
@@ -148,7 +172,7 @@ namespace ORM_FrameWork.MetaModels
 
 
             if (baseEntity.IsMaterial)
-                str += $" INNER JOIN {baseEntity.TableName} ON {PKey.ColumnName} = {ChildKey}"; 
+                str += $" INNER JOIN {baseEntity.TableName} ON {PKey.ColumnName} = {ChildKey}";
 
             if (!string.IsNullOrWhiteSpace(SubsetQuery))
                 str += $" WHERE ({SubsetQuery})";
@@ -156,7 +180,8 @@ namespace ORM_FrameWork.MetaModels
             return str;
         }
 
-       public Field GetFieldForColumn(string columnName)
+        // public method which takes a name of the column and gets its field
+        public Field GetFieldForColumn(string columnName)
         {
             foreach (Field f in IntFields)
             {
@@ -167,7 +192,8 @@ namespace ORM_FrameWork.MetaModels
             return null;
         }
 
-        public Field GetFieldByName (string fieldName)
+        // public method which takes a name of the field and gets its field
+        public Field GetFieldByName(string fieldName)
         {
             foreach (Field f in Fields)
             {

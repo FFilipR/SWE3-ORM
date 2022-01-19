@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ORM.FrameWork.Loading
 {
+    // Interface for lazy loading 
     public interface ILazyLoading
     {
     }

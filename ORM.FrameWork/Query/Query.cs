@@ -9,19 +9,32 @@ using System.Threading.Tasks;
 
 namespace ORM.FrameWork.Query
 {
+    // Class which represents a query
     public sealed class Query<T> : IEnumerable<T>
     {
+        // private member array of argument objects
         private object[] Arguments = null;
+
+        // private member of previous query
         private Query<T> Previous;
-        private EOperationQuery Operation = EOperationQuery.NOP;
+
+        // private member list of internal values of given object type
         private List<T> IntValues = null;
+
+        // private member of  query operation
+        private EOperationQuery Operation = EOperationQuery.NOP;
+
+        // public member of the connection to the database
         public string ConnectionString { get; set;  }
+
+        // internal constructor which takes previous query and connection string and makes new instances
         internal Query(Query<T> previous, string connectionString)
         {
             this.Previous = previous;
             this.ConnectionString = connectionString;
         }
 
+        // private property lists which gets the value of the query
         private List<T> Values
         {
             get
@@ -34,14 +47,16 @@ namespace ORM.FrameWork.Query
                     {
                         ICollection<object> cache = null;
                         foreach (Type t in ORMapper.GetTypeOfChild(typeof(T)))
-                           setValues(t, cache);                       
+                           SetValues(t, cache);                       
                     }
                     else  
-                        setValues(typeof(T), null); 
+                        SetValues(typeof(T), null); 
                 }
                 return IntValues;         
             }
         }
+
+        // private method which takes a query operation and arguments and sets a new instance and retuns q new query
         private Query<T> SetOperation (EOperationQuery operation, params object[] arguments)
         {
             this.Operation = operation;
@@ -49,64 +64,88 @@ namespace ORM.FrameWork.Query
             return new Query<T>(this, ConnectionString);
         }
 
+        // public method which sets a NOT operation for the query and retuns the query
         public Query<T>Not()
         {
             return SetOperation(EOperationQuery.NOT);
         }
+
+        // public method which sets a AND operation for the query and retuns the query
         public Query<T> And()
         {
             return SetOperation(EOperationQuery.AND);
         }
+
+        // public method which sets a OR operation for the query and retuns the query
         public Query<T> Or()
         {
             return SetOperation(EOperationQuery.OR);
         }
+
+        // public method which sets a Group Begin operation for the query and retuns the query
         public Query<T> GroupBegin()
         {
             return SetOperation(EOperationQuery.GRPB);
         }
+
+        // public method which sets a Group ENd operation for the query and retuns the query
         public Query<T> GroupEnd()
         {
             return SetOperation(EOperationQuery.GRPE);
         }
+
+        // public method which sets a EQUALS operation for the query and retuns the query
         public Query<T> Equals(string field, object val, bool caseIgnore = false)
         {
             return SetOperation(EOperationQuery.EQ, field, val, caseIgnore);
         }
 
+        // public method which sets a LIKE operation for the query and retuns the query
         public Query<T> Like(string field, object val, bool caseIgnore = false)
         {
             return SetOperation(EOperationQuery.LIKE, field, val, caseIgnore);
         }
+
+        // public method which sets a IN operation for the query and retuns the query
         public Query<T> IN(string field, params object[] val)
         {
             List<object> list = new List<object>(val);
             list.Insert(0, field);
             return SetOperation(EOperationQuery.IN, list.ToArray());
         }
+
+        // public method which sets a GREATER operation for the query and retuns the query
         public Query<T> Greater(string field, object val)
         {
             return SetOperation(EOperationQuery.G, field, val);
         }
+
+        // public method which sets a LESS operation for the query and retuns the query
         public Query<T> Less(string field, object val)
         {
             return SetOperation(EOperationQuery.L, field, val);
         }
+
+        // public method which gets the enumerator for the specified object
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             return Values.GetEnumerator();
         }
+
+        // public method which gets the enumerator for the  object
         IEnumerator IEnumerable.GetEnumerator()
         {
             return Values.GetEnumerator();
         }
 
+        // public method wchic retuns a list result of queries
         public List<T> ToList()
         {
             return new List<T>(Values);
         }
 
-        private void setValues(Type type, ICollection<object> cache)
+        // private method which takes a type and cache end sets it to the list in or mapper
+        private void SetValues(Type type, ICollection<object> cache)
         {
            
                 List<Query<T>> queries = new List<Query<T>>();

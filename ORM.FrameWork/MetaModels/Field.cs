@@ -10,16 +10,20 @@ using System.Threading.Tasks;
 
 namespace ORM_FrameWork.MetaModels
 {
+    // Class which represents a field  
     internal class Field
     {
-        public Field(Entity entity)
-        {
-            this.Entity = entity;
-        }
-        public Entity Entity { get; internal set; } // entity who it belongs 
+
+        // public property which gets and sets the entity who the field belongs
+        public Entity Entity { get; internal set; } 
+
+        // public property which gets and sets new connection to the database 
         public static NpgsqlConnection DbConnection { get; set; } = new NpgsqlConnection();
+
+        // public property which gets and sets a member info of the field
         public MemberInfo Member { get; internal set; }
 
+        // public property which gets and sets a type of the field
         public Type Type // in Object
         {
             get
@@ -30,22 +34,41 @@ namespace ORM_FrameWork.MetaModels
                 throw new NotSupportedException();
             }
         }
+
+        // public property which gets and sets the name of the column
         public string ColumnName { get; internal set; }
+
+
+        // public property which gets and sets a db type of the column
         public Type ColumnType { get; internal set; } // on DB level
+
+        // public property which gets and sets whether the field is null or not
         public bool IsNullable { get; internal set; } = false;
+
+        // public property which gets and sets whether the field is primary key
         public bool IsPkey { get; internal set; } = false;
+
+        // public property which gets and sets whether the field is foreign key 
         public bool IsFkey { get; internal set; } = false;
+
+        // public property which gets and sets whether the field is external 
         public bool IsExternal { get; internal set; } = false;
 
+        // public property which represent that the field is a assigment table
         public string AssigmentTable { get; internal set; }
-        public string RemoteColumnName { get; internal set; }
-        public bool IsMtoM { get; internal set; }
 
+        // public property which gets and sets a column name of the remote table
+        public string RemoteColumnName { get; internal set; }
+
+        // public property which gets and sets whether the field is in M to N relation
+        public bool IsMtoN { get; internal set; }
+
+        // public property which gets sql foreign key
         internal string SqlFkey
         {
             get
             {
-                if (IsMtoM)
+                if (IsMtoN)
                     return $"{ORMapper.GetEntity(Type.GenericTypeArguments[0]).GetSql()} WHERE ID IN (SELECT {RemoteColumnName} FROM {AssigmentTable} WHERE {ColumnName} = @fKey)";
 
                 else
@@ -53,6 +76,14 @@ namespace ORM_FrameWork.MetaModels
 
             }
         }
+        
+        // constructor which takes a entity and creates a new instance of the class
+        public Field(Entity entity)
+        {
+            this.Entity = entity;
+        }
+
+        // public method which takes an object and gets the field value of it
         public object GetValue(object obj)
         {
             if (Member is PropertyInfo)
@@ -72,6 +103,9 @@ namespace ORM_FrameWork.MetaModels
 
             throw new NotSupportedException("Type of the member is not supported.");
         }
+
+        // public method which takes an object and its value and sets it
+
         public void SetValue(object obj, object val)
         {
             if (Member is PropertyInfo)
@@ -83,6 +117,7 @@ namespace ORM_FrameWork.MetaModels
             throw new NotSupportedException("Type of the member is not supported.");
         }
 
+        // public method which takes an object and retuns his column type of the database level
         public object ToColumnType(object val) // taking an object type and converting it in the corresponding type in DB
         {
             if (IsFkey)
@@ -109,6 +144,7 @@ namespace ORM_FrameWork.MetaModels
             return val;
         }
 
+        // public method which takes an object, cache and conneciton string then retuns his field type 
         public object ToFieldType(object val, ICollection<object> cache, string connectionString)
         {
             if (IsFkey)
@@ -143,13 +179,14 @@ namespace ORM_FrameWork.MetaModels
             return val;
         }
 
+        // public method which takes a list , object, cache and conneciton string and fills the list for the foreign key
         public object FillList(object listObj, object obj, ICollection<object> cache, string connectionString)
         {
-
             ORMapper.ListFiller(Type.GenericTypeArguments[0], listObj, SqlFkey, new Tuple<string, object>[] { new Tuple<string, object>("@fKey", Entity.PKey.GetValue(obj)) }, connectionString, cache);
             return listObj;
         }
 
+        // public methodh which takes an object and connection string then updates the relations
         public void UpdateRelations(object obj, string connectionString)
         {
 
@@ -166,7 +203,7 @@ namespace ORM_FrameWork.MetaModels
             Entity innerEntity = ORMapper.GetEntity(Type.GenericTypeArguments[0]); // example: if table skill, innerEntity is the jDev of the skill
             object pKey = Entity.PKey.ToColumnType(Entity.PKey.GetValue(obj));
 
-            if (IsMtoM)
+            if (IsMtoN)
             {
                 command = connection.CreateCommand();
                 command.CommandText = $"DELETE FROM {AssigmentTable} WHERE {ColumnName} = @pKey";
