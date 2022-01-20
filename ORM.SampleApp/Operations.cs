@@ -20,7 +20,7 @@ namespace ORM.SampleApp
         // public method which creates the database 
         public static void CreateDB()
         {
-            Console.WriteLine("->Createing DB tables.");
+            Console.WriteLine("->Creating DB tables.");
 
             ORMapper.CreateDbTables1(Program.ConnectionString);
             Console.WriteLine("_______________________________________________________________________");
@@ -48,7 +48,7 @@ namespace ORM.SampleApp
             m1.LastName = "Bird";
             m1.BirthDate = new DateTime(1969, 9, 10);
             m1.HireDate = new DateTime(1999, 1, 2);     
-            m1.Sex = (int)Person.Gender.MALE;
+            m1.Sex = Person.Gender.MALE;
             m1.Salary = 4500;
 
             ORMapper.SaveToDb(m1, Program.ConnectionString);
@@ -150,7 +150,7 @@ namespace ORM.SampleApp
             jDev1.LastName = "Atkinson";
             jDev1.BirthDate = new DateTime(1998, 3, 12);
             jDev1.HireDate = new DateTime(2021, 2, 25);
-            jDev1.Sex = (int)Person.Gender.FEMALE;
+            jDev1.Sex = Person.Gender.FEMALE;
             jDev1.Salary = 2100;   
             ORMapper.SaveToDb(jDev1, Program.ConnectionString);
 
@@ -160,7 +160,7 @@ namespace ORM.SampleApp
             jDev2.LastName = "Rhodes";
             jDev2.BirthDate = new DateTime(1999, 6, 12);
             jDev2.HireDate = new DateTime(2021, 2, 25);
-            jDev2.Sex = (int)Person.Gender.MALE;
+            jDev2.Sex = Person.Gender.MALE;
             jDev2.Salary = 2500;
             ORMapper.SaveToDb(jDev2, Program.ConnectionString);
 

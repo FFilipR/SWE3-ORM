@@ -4,12 +4,23 @@ drop table Departments;
 drop table Skills;
 drop table Mentors;
 drop table Persons;
+drop type Gender;
+
+select * from jDevs_skills;
+select * from JuniorDevelopers;
+select * from Departments;
+select * from Skills;
+select * from Mentors;
+select * from Persons;
+
+
+CREATE TYPE Gender AS ENUM ('male', 'female')
 
 create table Persons (
 	ID varchar(50) primary key,
 	FirstName varchar(50),
 	LastName varchar(50),
-	Sex int,
+	Sex Gender,
 	BDate timestamptz
 )
 

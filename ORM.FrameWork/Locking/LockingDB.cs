@@ -149,7 +149,7 @@ namespace ORM.FrameWork.Locking
             NpgsqlCommand command = connection.CreateCommand();
 
             command.CommandText = "DELETE FROM Locking  WHERE ((JulianDay(Current_Timestamp) - JulianDay(LTime) * 86400) > @time";
-            command.Parameters.Add(new NpgsqlParameter("@c", TimeOut));
+            command.Parameters.Add(new NpgsqlParameter("@time", TimeOut));
 
             command.ExecuteNonQuery();
             command.Parameters.Clear();

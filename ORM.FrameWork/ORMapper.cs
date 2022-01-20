@@ -28,8 +28,8 @@ namespace ORM_FrameWork
         // public property which gets/sets the cache of the framework
         public static ICache Cache { get; set; }
 
-        // internal method which takes a object as a parameter and gets a entity for this object
-        internal static Entity GetEntity(object obj)
+        // public method which takes a object as a parameter and gets a entity for this object
+        public static Entity GetEntity(object obj)
         {
             Type type = ((obj is Type) ? (Type)obj : obj.GetType()); // if obj then GetType , otherwise type
 
@@ -49,9 +49,7 @@ namespace ORM_FrameWork
             Save(obj, GetEntity(obj), GetEntity(obj.GetType().BaseType).IsMaterial, false, connectionString);
         }
 
-
         // private method which  takes an object, entity, baseMaterial boolean, base boolean and conneciton string and saves the object in the database
-
         private static void Save(object obj, Entity entity, bool isBaseMaterial, bool isBase, string connectionString)
         {
             string insert = string.Empty;
@@ -211,9 +209,8 @@ namespace ORM_FrameWork
             return obj;
         }
 
-        // internal method which takes a type, primary key, cache and conneciton string and then creates a object for the database
-
-        internal static object Create(Type type, object pKey, ICollection<object> cache, string connectionString)
+        // public method which takes a type, primary key, cache and conneciton string and then creates a object for the database
+        public static object Create(Type type, object pKey, ICollection<object> cache, string connectionString)
 
         {
 
@@ -369,7 +366,6 @@ namespace ORM_FrameWork
         }
 
         // public method which takes a object and releases the lock
-
         public static void Release(object obj)
         {
             if (Locking != null)
@@ -383,13 +379,19 @@ namespace ORM_FrameWork
             connection.Open();
             NpgsqlCommand command = connection.CreateCommand();
 
+            command.CommandText = "CREATE TYPE Gender AS ENUM ('male', 'female')";
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+
+            command = connection.CreateCommand();
             command.CommandText =   "CREATE TABLE Mentors" +
                                     "(" +
                                         "ID varchar(50) primary key, " +
                                         "FirstName varchar(50), " +
                                         "LastName varchar(50), " +
                                         "BDate timestamptz, " +
-                                        "Sex int, " +
+                                        "Sex Gender, " +
                                         "Salary int, " +
                                         "HDate timestamptz" +
                                     ")";
@@ -428,7 +430,8 @@ namespace ORM_FrameWork
                                         "FirstName varchar(50), " +
                                         "LastName varchar(50), " +
                                         "BDate timestamptz, " +
-                                        "Sex int, Salary int, " +
+                                        "Sex Gender, " +
+                                        "Salary int, " +
                                         "HDate timestamptz, " +
                                         "KDepartment varchar(50), " +
                                         "foreign key(KDepartment) references Departments(ID)" +
@@ -484,6 +487,11 @@ namespace ORM_FrameWork
             command.Dispose();
 
             command = connection.CreateCommand();
+            command.CommandText = "DROP TYPE Gender";
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            command = connection.CreateCommand();
             command.CommandText = "DROP TABLE Locking";
             command.ExecuteNonQuery();
             command.Dispose();
@@ -498,12 +506,17 @@ namespace ORM_FrameWork
             connection.Open();
             NpgsqlCommand command = connection.CreateCommand();
 
+            command.CommandText = "CREATE TYPE Gender AS ENUM ('male', 'female')";
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            command = connection.CreateCommand();
             command.CommandText = "CREATE TABLE Persons" +
                                     "(" +
                                         "ID varchar(50) primary key, " +
                                         "FirstName varchar(50), " +
                                         "LastName varchar(50), " +
-                                        "Sex int, " +
+                                        "Sex Gender, " +
                                         "BDate timestamptz " +
                                     ")";
 
@@ -606,6 +619,11 @@ namespace ORM_FrameWork
 
             command = connection.CreateCommand();
             command.CommandText = "DROP TABLE Persons";
+            command.ExecuteNonQuery();
+            command.Dispose();
+
+            command = connection.CreateCommand();
+            command.CommandText = "DROP TYPE Gender";
             command.ExecuteNonQuery();
             command.Dispose();
 

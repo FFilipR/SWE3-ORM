@@ -26,7 +26,7 @@ namespace ORM.TablePerTypeApp.Firma
         public DateTime BirthDate { get; set; }
 
         // public property which gets/sets the gender of the person
-        public int Sex { get; set; }
+        public Gender Sex { get; set; }
 
         // protected member which represents a instance counter
         protected static int InstanceCounter = 1;
@@ -38,8 +38,8 @@ namespace ORM.TablePerTypeApp.Firma
         // public enumeration of person gender
         public enum Gender
         {
-            MALE = 0,
-            FEMALE = 1
+            MALE,
+            FEMALE 
         }
     }
 }

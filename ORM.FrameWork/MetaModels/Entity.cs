@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace ORM_FrameWork.MetaModels
 {
     // Class which represents a entity 
-    internal class Entity
+    public class Entity
     {
         //  public property which gets and sets a member of the entity
         public Type Member { get; private set; }
@@ -22,13 +22,13 @@ namespace ORM_FrameWork.MetaModels
         //public property which gets and sets  the private key of the entity
         public Field PKey { get; set; }
 
-        // private property of local internal fields of the entity
+        // private property of local fields of the entity
         private Field[] localIntFields = null;
 
         //public property which gets and sets external fields of the entity
         public Field[] ExtFields { get; private set; }
 
-        //public property which gets and sets internal fields of the entity
+        //public property which gets and sets fields of the entity
         public Field[] IntFields { get; private set; }
 
         //public property which gets and sets  fields of the entity
@@ -43,7 +43,7 @@ namespace ORM_FrameWork.MetaModels
         //public property which gets and sets the key of the child  of the entity
         public string ChildKey { get; private set; }
 
-        // public property which gets internal fields which are in te local entity table
+        // public property which gets fields which are in te local entity table
         public Field[] LocalIntFields
         {
             get

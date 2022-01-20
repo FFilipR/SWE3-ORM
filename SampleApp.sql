@@ -12,6 +12,7 @@ drop table JuniorDevelopers;
 drop table Departments;
 drop table Skills;
 drop table Mentors;
+drop type Gender;
 drop table locking;
 drop INDEX Uq_Locking;
 
@@ -19,12 +20,14 @@ CREATE TABLE Locking (LClass varchar(50) NOT NULL, LObject varchar(50) NOT NULL,
 CREATE UNIQUE INDEX UX_Locking ON Locking (LClass, LObject)
 
 
+CREATE TYPE Gender AS ENUM ('male', 'female')
+
 create table Mentors(
 	ID varchar(50) primary key,
 	FirstName varchar(50),
 	LastName varchar(50),
 	BDate timestamptz,
-	Sex int,
+	Sex Gender,
 	Salary int,
 	HDate timestamptz
 )
@@ -48,7 +51,7 @@ create table JuniorDevelopers (
 	FirstName varchar(50),
 	LastName varchar(50),
 	BDate timestamptz,
-	Sex int,
+	Sex Gender,
 	Salary int,
 	HDate timestamptz,
 	KDepartment varchar(50),
@@ -87,5 +90,5 @@ alter system set max_connections = 200;
 
 
 SELECT Salary, HDate, KDepartment, ID, FirstName, LastName, BDate, Sex FROM JuniorDevelopers WHERE (Salary > '2200')
-
-Create Table 
+INSERT INTO Mentors(ID,FirstName,LastName,BDate,Sex,Salary,HDate) VALUES ('m0','Paja','Patak','28-Feb-22 12:00:00 AM','MALE','99999','21-Jan-21 12:00:00 AM')
+ 

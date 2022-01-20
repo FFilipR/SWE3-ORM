@@ -1,0 +1,235 @@
+{
+  "format": 1,
+  "restore": {
+    "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.Tests\\ORM.Tests.csproj": {}
+  },
+  "projects": {
+    "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.FrameWork\\ORM.FrameWork.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.FrameWork\\ORM.FrameWork.csproj",
+        "projectName": "ORM.FrameWork",
+        "projectPath": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.FrameWork\\ORM.FrameWork.csproj",
+        "packagesPath": "C:\\Users\\FilipFilipovic\\.nuget\\packages\\",
+        "outputPath": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.FrameWork\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\FilipFilipovic\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net5.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net5.0": {
+            "targetAlias": "net5.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net5.0": {
+          "targetAlias": "net5.0",
+          "dependencies": {
+            "Npgsql": {
+              "target": "Package",
+              "version": "[6.0.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.403\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.SampleApp\\ORM.SampleApp.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.SampleApp\\ORM.SampleApp.csproj",
+        "projectName": "ORM.SampleApp",
+        "projectPath": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.SampleApp\\ORM.SampleApp.csproj",
+        "packagesPath": "C:\\Users\\FilipFilipovic\\.nuget\\packages\\",
+        "outputPath": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.SampleApp\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\FilipFilipovic\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net5.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net5.0": {
+            "targetAlias": "net5.0",
+            "projectReferences": {
+              "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.FrameWork\\ORM.FrameWork.csproj": {
+                "projectPath": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.FrameWork\\ORM.FrameWork.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net5.0": {
+          "targetAlias": "net5.0",
+          "dependencies": {
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "Npgsql": {
+              "target": "Package",
+              "version": "[6.0.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.403\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.Tests\\ORM.Tests.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.Tests\\ORM.Tests.csproj",
+        "projectName": "ORM.Tests",
+        "projectPath": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.Tests\\ORM.Tests.csproj",
+        "packagesPath": "C:\\Users\\FilipFilipovic\\.nuget\\packages\\",
+        "outputPath": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.Tests\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\FilipFilipovic\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net5.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net5.0": {
+            "targetAlias": "net5.0",
+            "projectReferences": {
+              "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.FrameWork\\ORM.FrameWork.csproj": {
+                "projectPath": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.FrameWork\\ORM.FrameWork.csproj"
+              },
+              "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.SampleApp\\ORM.SampleApp.csproj": {
+                "projectPath": "D:\\Private\\FH\\semester 5\\SWE3 - Software Engineering 3\\ORM.App\\ORM.SampleApp\\ORM.SampleApp.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net5.0": {
+          "targetAlias": "net5.0",
+          "dependencies": {
+            "Microsoft.NET.Test.Sdk": {
+              "target": "Package",
+              "version": "[16.9.4, )"
+            },
+            "Moq": {
+              "target": "Package",
+              "version": "[4.16.1, )"
+            },
+            "NUnit": {
+              "target": "Package",
+              "version": "[3.13.1, )"
+            },
+            "NUnit3TestAdapter": {
+              "target": "Package",
+              "version": "[3.17.0, )"
+            },
+            "coverlet.collector": {
+              "target": "Package",
+              "version": "[3.0.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.403\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

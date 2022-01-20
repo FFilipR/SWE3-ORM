@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 namespace ORM_FrameWork.MetaModels
 {
     // Class which represents a field  
-    internal class Field
+    public class Field
     {
 
         // public property which gets and sets the entity who the field belongs
-        public Entity Entity { get; internal set; } 
+        public Entity Entity { get; set; } 
 
         // public property which gets and sets new connection to the database 
         public static NpgsqlConnection DbConnection { get; set; } = new NpgsqlConnection();
@@ -63,7 +63,7 @@ namespace ORM_FrameWork.MetaModels
         // public property which gets and sets whether the field is in M to N relation
         public bool IsMtoN { get; internal set; }
 
-        // public property which gets sql foreign key
+        // internal property which gets sql foreign key
         internal string SqlFkey
         {
             get
@@ -130,7 +130,6 @@ namespace ORM_FrameWork.MetaModels
                 return ORMapper.GetEntity(type).PKey.ToColumnType(obj); // for example type is jDeveloper datatype 
             }
 
-
             if (val is bool)
             {
                 if (ColumnType == typeof(int))
@@ -174,7 +173,16 @@ namespace ORM_FrameWork.MetaModels
                 return Convert.ToInt64(val);
 
             if (Type.IsEnum)
-                return Enum.ToObject(Type, val);
+            {
+                int nVal = 0;
+
+                if (val == "male")
+                    nVal = 0;
+                if (val == "female")
+                    nVal = 1;
+
+                return Enum.ToObject(Type, nVal);
+            }
 
             return val;
         }
